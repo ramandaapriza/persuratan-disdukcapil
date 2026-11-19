@@ -456,7 +456,7 @@ class DatabaseSeeder extends Seeder
                 'status_aksi' => 'valid_kasubbag',
                 'verifikator_id' => $kasubbag->id,
                 'catatan' => 'Diverifikasi & Disetujui Kasubbag Umpeg.',
-                'checklist_pemeriksaan' => ['kode_bidang' => true, 'lampiran' => true, 'redaksi' => true],
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
                 'waktu_verifikasi' => '2026-11-10 09:15:00',
             ],
             [
@@ -465,6 +465,156 @@ class DatabaseSeeder extends Seeder
                 'verifikator_id' => $sekdin->id,
                 'catatan' => 'Diparaf & Diteruskan ke Kadin.',
                 'waktu_verifikasi' => '2026-11-10 10:00:00',
+            ],
+        ]);
+
+        // 8. Seed Antrean Aktif Tahap 1 (status = 'draf' — Menunggu Verifikasi Kasubbag Umpeg)
+        $sk2765Draf = SuratKeluar::updateOrCreate(
+            ['nomor_surat' => '400/2765/disdukcapil/2026'],
+            [
+                'nomor_urut' => 2765,
+                'kode_klasifikasi_id' => $bidang400->id,
+                'tahun' => 2026,
+                'tanggal_dikeluarkan' => '2026-11-17',
+                'alamat_tujuan' => 'Kepala Dinas Kesehatan Kabupaten Ogan Komering Ilir',
+                'perihal' => 'Sinkronisasi Data Kelahiran dan Penerbitan KIA Terintegrasi Puskesmas Se-Kabupaten OKI',
+                'sifat' => 'Penting',
+                'lampiran' => '1 (Satu) Berkas Daftar Puskesmas',
+                'status' => 'draf',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', SuratKeluar::class)->where('naskah_id', $sk2765Draf->id)->delete();
+        $sk2765Draf->logVerifikasi()->create([
+            'tahap_verifikasi' => 'staf_admin',
+            'status_aksi' => 'diajukan',
+            'verifikator_id' => $admin->id,
+            'catatan' => 'Konsep Surat Keluar 400/2765/disdukcapil/2026 diajukan ke Kasubbag Umpeg (Tahap 1).',
+            'waktu_verifikasi' => '2026-11-17 08:15:00',
+        ]);
+
+        $sppd092Draf = Sppd::updateOrCreate(
+            ['nomor_sppd' => '800/092/SPPD/DUKCAPIL/2026'],
+            [
+                'nomor_urut' => 92,
+                'kode_klasifikasi_id' => $bidang800->id,
+                'tanggal_surat' => '2026-11-17',
+                'pegawai_id' => $admin->id,
+                'nama_pegawai' => 'Rizky Pratama, S.IP',
+                'nip_pegawai' => '199403152019031005',
+                'jabatan_pegawai' => 'Staf Administrasi Subbag Umum & Kepegawaian',
+                'tanggal_berangkat' => '2026-11-22',
+                'tanggal_kembali' => '2026-11-23',
+                'daerah_tujuan' => 'Kecamatan Tulung Selapan & Kecamatan Cengal, Kab. OKI',
+                'urusan_perjalanan' => 'Pendampingan Teknis Pelayanan Jemput Bola Perekaman KTP-el dan Akta Kelahiran Daerah Perairan.',
+                'status' => 'draf',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', Sppd::class)->where('naskah_id', $sppd092Draf->id)->delete();
+        $sppd092Draf->logVerifikasi()->create([
+            'tahap_verifikasi' => 'staf_admin',
+            'status_aksi' => 'diajukan',
+            'verifikator_id' => $admin->id,
+            'catatan' => 'Konsep SPPD 800/092/SPPD/DUKCAPIL/2026 diajukan ke Kasubbag Umpeg (Tahap 1).',
+            'waktu_verifikasi' => '2026-11-17 08:40:00',
+        ]);
+
+        $ba029Draf = BeritaAcara::updateOrCreate(
+            ['nomor_berita_acara' => '400/029/BA-SIAK/XI/2026'],
+            [
+                'nomor_urut' => 29,
+                'kode_klasifikasi_id' => $bidang400->id,
+                'tanggal_berita_acara' => '2026-11-17',
+                'pihak_kedua' => 'RSUD Kayuagung Kabupaten Ogan Komering Ilir',
+                'perihal' => 'Berita Acara Rekonsiliasi Data Penerbitan Akta Kelahiran & Kematian Pasien RSUD Kayuagung Triwulan IV',
+                'status' => 'draf',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', BeritaAcara::class)->where('naskah_id', $ba029Draf->id)->delete();
+        $ba029Draf->logVerifikasi()->create([
+            'tahap_verifikasi' => 'staf_admin',
+            'status_aksi' => 'diajukan',
+            'verifikator_id' => $admin->id,
+            'catatan' => 'Konsep Berita Acara 400/029/BA-SIAK/XI/2026 diajukan ke Kasubbag Umpeg (Tahap 1).',
+            'waktu_verifikasi' => '2026-11-17 09:05:00',
+        ]);
+
+        // 9. Seed Antrean Aktif Tahap 2 (status = 'valid_kasubbag' — Menunggu Paraf Sekretaris Dinas)
+        $sk2766ValidKasubbag = SuratKeluar::updateOrCreate(
+            ['nomor_surat' => '800/2766/disdukcapil/2026'],
+            [
+                'nomor_urut' => 2766,
+                'kode_klasifikasi_id' => $bidang800->id,
+                'tahun' => 2026,
+                'tanggal_dikeluarkan' => '2026-11-16',
+                'alamat_tujuan' => 'Kepala BKPSDM Kabupaten Ogan Komering Ilir',
+                'perihal' => 'Pengiriman Daftar Usulan Kenaikan Pangkat dan Penilaian Kinerja Aparatur Disdukcapil OKI',
+                'sifat' => 'Penting',
+                'lampiran' => '1 (Satu) Bundel Berkas Kepegawaian',
+                'status' => 'valid_kasubbag',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', SuratKeluar::class)->where('naskah_id', $sk2766ValidKasubbag->id)->delete();
+        $sk2766ValidKasubbag->logVerifikasi()->createMany([
+            [
+                'tahap_verifikasi' => 'staf_admin',
+                'status_aksi' => 'diajukan',
+                'verifikator_id' => $admin->id,
+                'catatan' => 'Konsep Surat Keluar 800/2766/disdukcapil/2026 diajukan ke Kasubbag Umpeg.',
+                'waktu_verifikasi' => '2026-11-16 09:00:00',
+            ],
+            [
+                'tahap_verifikasi' => 'kasubbag_umpeg',
+                'status_aksi' => 'valid_kasubbag',
+                'verifikator_id' => $kasubbag->id,
+                'catatan' => 'Kode klasifikasi 800 dan daftar lampiran pegawai sudah lengkap. Diteruskan ke Sekretaris Dinas.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 10:20:00',
+            ],
+        ]);
+
+        $sppd093ValidKasubbag = Sppd::updateOrCreate(
+            ['nomor_sppd' => '800/093/SPPD/DUKCAPIL/2026'],
+            [
+                'nomor_urut' => 93,
+                'kode_klasifikasi_id' => $bidang800->id,
+                'tanggal_surat' => '2026-11-16',
+                'pegawai_id' => $kasubbag->id,
+                'nama_pegawai' => 'Hj. Siti Rahmawati, S.Sos., M.Si',
+                'nip_pegawai' => '198002102006042008',
+                'jabatan_pegawai' => 'Kasubbag Umum & Kepegawaian',
+                'tanggal_berangkat' => '2026-11-24',
+                'tanggal_kembali' => '2026-11-25',
+                'daerah_tujuan' => 'Biro Pemerintahan & Otda Setda Prov. Sumsel - Palembang',
+                'urusan_perjalanan' => 'Konsultasi Penyusunan Standar Operasional Prosedur (SOP) Tata Naskah Dinas Elektronik (TNDE) Disdukcapil OKI.',
+                'status' => 'valid_kasubbag',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', Sppd::class)->where('naskah_id', $sppd093ValidKasubbag->id)->delete();
+        $sppd093ValidKasubbag->logVerifikasi()->createMany([
+            [
+                'tahap_verifikasi' => 'staf_admin',
+                'status_aksi' => 'diajukan',
+                'verifikator_id' => $admin->id,
+                'catatan' => 'Konsep SPPD 800/093/SPPD/DUKCAPIL/2026 diajukan.',
+                'waktu_verifikasi' => '2026-11-16 11:00:00',
+            ],
+            [
+                'tahap_verifikasi' => 'kasubbag_umpeg',
+                'status_aksi' => 'valid_kasubbag',
+                'verifikator_id' => $kasubbag->id,
+                'catatan' => 'Jadwal perjalanan dinas dan surat tugas telah sesuai. Diteruskan ke Sekretaris Dinas.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 13:15:00',
             ],
         ]);
     }

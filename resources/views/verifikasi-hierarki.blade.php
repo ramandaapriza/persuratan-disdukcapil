@@ -113,6 +113,10 @@
             background-color: #F8FAFC;
         }
 
+        .table-ledger tbody tr.active-row {
+            background-color: #EFF6FF;
+        }
+
         .doc-number-mono {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.78rem;
@@ -124,7 +128,7 @@
             border-radius: var(--radius-md);
             padding: 0.55rem 0.9rem;
             background-color: var(--color-slate-50);
-            cursor: pointer;
+            cursor: default;
             transition: all 0.15s ease;
         }
 
@@ -250,6 +254,8 @@
         'sekdin' => 'Otoritas: Sekdin (Verif II)',
         default => 'Otoritas: Staf Admin',
     };
+
+    $activeQueueCount = $userRole === 'sekdin' ? ($countTahap2 ?? 0) : ($countTahap1 ?? 0);
 @endphp
 
 <div class="d-flex">
@@ -314,7 +320,7 @@
                         <i class="bi bi-file-earmark-check-fill" aria-hidden="true"></i>
                         <span>Verifikasi Hierarki Naskah</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $activeQueueCount }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -351,14 +357,12 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -376,12 +380,6 @@
                 </a>
 
                 <div class="sidebar-section-label">OTORISASI &amp; KEAMANAN</div>
-                <a href="#modalPinTte" data-bs-toggle="modal" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
-                        <span>Pengaturan PIN / Passphrase TTE</span>
-                    </span>
-                </a>
                 <a href="/logout" class="nav-link-sidebar text-danger">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
@@ -423,7 +421,7 @@
             <div class="d-flex align-items-center gap-2">
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
-                    <span>Selasa, 17 November 2026</span>
+                    <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
@@ -455,6 +453,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <i class="bi bi-shield-exclamation flex-shrink-0" aria-hidden="true"></i>
@@ -462,6 +461,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Validasi Verifikasi Gagal:</div>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
+
             <div class="surface-card p-3 px-4 mb-4">
                 <div class="d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                     <div>
@@ -469,14 +481,16 @@
                             <span class="badge rounded-pill px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
                                 <i class="bi bi-shield-lock-fill me-1" aria-hidden="true"></i>Otoritas Verifikasi Berjenjang Terkunci (Single Gate RBAC)
                             </span>
-                            <span class="text-secondary" style="font-size: 0.74rem;">Tahap pemeriksaan disesuaikan otomatis berdasarkan akun pejabat yang login</span>
+                            <span class="text-secondary" style="font-size: 0.74rem;">
+                                Antrean dikunci otomatis pada status <code>{{ $targetStatus }}</code> sesuai role pejabat
+                            </span>
                         </div>
                         <h6 class="fw-bold text-dark mb-0">Meja Kerja Pemeriksaan Konsep Surat Keluar, SPPD, &amp; Berita Acara</h6>
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         @if(auth()->user()->role === 'sekdin')
-                            <div class="role-switcher-pill active-stage d-flex align-items-center gap-2" style="cursor: default;">
+                            <div class="role-switcher-pill active-stage d-flex align-items-center gap-2">
                                 <span class="badge rounded-circle bg-primary text-white">2</span>
                                 <div>
                                     <div class="fw-bold text-primary" style="font-size: 0.76rem;">Tahap 2 Aktif: Sekretaris Dinas (Sekdin)</div>
@@ -484,7 +498,7 @@
                                 </div>
                             </div>
                         @else
-                            <div class="role-switcher-pill active-stage d-flex align-items-center gap-2" style="cursor: default;">
+                            <div class="role-switcher-pill active-stage d-flex align-items-center gap-2">
                                 <span class="badge rounded-circle bg-primary text-white">1</span>
                                 <div>
                                     <div class="fw-bold text-primary" style="font-size: 0.76rem;">Tahap 1 Aktif: Kasubbag Umum &amp; Kepegawaian</div>
@@ -498,12 +512,12 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="{{ $userRole === 'kasubbag' ? 'border-color: #F59E0B; background-color: #FFFBEB;' : '' }}">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.75rem;">Menunggu Verifikasi Tahap 1 Kasubbag</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">4</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $countTahap1 }}</div>
                             <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
-                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Konsep baru dari Staf Admin
+                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Status <code>draf</code> dari Staf Admin
                             </div>
                         </div>
                         <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
@@ -513,12 +527,12 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="{{ $userRole === 'sekdin' ? 'border-color: #2563EB; background-color: #EFF6FF;' : '' }}">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.75rem;">Menunggu Paraf Tahap 2 Sekdin</div>
-                            <div class="fs-4 fw-bold text-primary lh-1 mb-1">3</div>
+                            <div class="fs-4 fw-bold text-primary lh-1 mb-1">{{ $countTahap2 }}</div>
                             <div class="text-primary fw-medium" style="font-size: 0.72rem;">
-                                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Lolos verifikasi Kasubbag
+                                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Status <code>valid_kasubbag</code>
                             </div>
                         </div>
                         <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
@@ -531,9 +545,9 @@
                     <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.75rem;">Dikembalikan untuk Revisi</div>
-                            <div class="fs-4 fw-bold text-danger lh-1 mb-1">1</div>
+                            <div class="fs-4 fw-bold text-danger lh-1 mb-1">{{ $countRevisi }}</div>
                             <div class="text-danger fw-medium" style="font-size: 0.72rem;">
-                                <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Perbaikan redaksi / kode
+                                <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Status <code>revisi</code> di Staf Admin
                             </div>
                         </div>
                         <div class="mini-stat-icon" style="background-color: #FEE2E2; color: #DC2626;">
@@ -547,9 +561,9 @@
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.75rem;">Diteruskan ke TTE Kadin</div>
-                                <div class="fs-4 fw-bold text-success lh-1 mb-1">142</div>
+                                <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $countDiteruskanKadin }}</div>
                                 <div class="text-success fw-medium" style="font-size: 0.72rem;">
-                                    <i class="bi bi-shield-fill-check me-1" aria-hidden="true"></i>Siap &amp; selesai TTE Kadin
+                                    <i class="bi bi-shield-fill-check me-1" aria-hidden="true"></i>{{ $countMenungguTteKadin }} antrean &bull; {{ $countSelesaiTteKadin }} sah TTE
                                 </div>
                             </div>
                             <div class="mini-stat-icon" style="background-color: #DCFCE7; color: #16A34A;">
@@ -569,122 +583,229 @@
                                     <i class="bi bi-file-earmark-richtext-fill" aria-hidden="true"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Pratinjau Konsep Naskah Dinas (A4 Resmi)</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Nomor Konsep: <span id="headerPreviewNo" class="doc-number-mono text-primary">400/2763/disdukcapil/2026</span></div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Pratinjau Konsep Naskah Dinas (A4 Resmi)</h6>
+                                        <span id="headerPreviewJenisBadge" class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: {{ $activeKonsep['jenis_badge_bg'] ?? '#DBEAFE' }}; color: {{ $activeKonsep['jenis_badge_color'] ?? '#1D4ED8' }}; font-size: 0.68rem;">
+                                            {{ $activeKonsep['jenis_label'] ?? 'Naskah Dinas' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 0.73rem;">
+                                        Nomor Konsep: <span id="headerPreviewNo" class="doc-number-mono text-primary">{{ $activeKonsep['nomor'] ?? '-' }}</span>
+                                    </div>
                                 </div>
                             </div>
-                            @if(auth()->user()->role === 'sekdin')
-                                <span id="stageHeaderBadge" class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.71rem;">
-                                    <i class="bi bi-pen-fill me-1" aria-hidden="true"></i>Paraf Tahap 2: Sekretaris Dinas
+
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <button type="button" id="btnPreviewLampiran"
+                                        class="btn btn-sm btn-outline-primary py-1 px-2 d-inline-flex align-items-center gap-1 {{ empty($activeKonsep['file_url']) ? 'd-none' : '' }}"
+                                        style="font-size: 0.72rem;"
+                                        onclick="openModalLampiran()">
+                                    <i class="bi bi-paperclip"></i>
+                                    <span>Pratinjau Lampiran Unggahan</span>
+                                </button>
+                                <span id="badgeNoLampiran" class="badge bg-light text-secondary border fw-normal {{ !empty($activeKonsep['file_url']) ? 'd-none' : '' }}" style="font-size: 0.68rem;">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Konsep Digital TNDE
                                 </span>
-                            @else
-                                <span id="stageHeaderBadge" class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.71rem;">
-                                    <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>Pemeriksaan Tahap 1: Kasubbag Umpeg
-                                </span>
-                            @endif
+
+                                @if(auth()->user()->role === 'sekdin')
+                                    <span id="stageHeaderBadge" class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.71rem;">
+                                        <i class="bi bi-pen-fill me-1" aria-hidden="true"></i>Paraf Tahap 2: Sekretaris Dinas
+                                    </span>
+                                @else
+                                    <span id="stageHeaderBadge" class="badge rounded-pill px-3 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.71rem;">
+                                        <i class="bi bi-eye-fill me-1" aria-hidden="true"></i>Pemeriksaan Tahap 1: Kasubbag Umpeg
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
                         <div class="p-3 p-md-4" style="background-color: var(--color-slate-50);">
-                            <div class="a4-paper rounded-2 shadow-sm mx-auto">
-                                <div class="draft-watermark">KONSEP NASKAH - MENUNGGU VERIFIKASI HIERARKI</div>
+                            @if($activeKonsep)
+                                <div class="a4-paper rounded-2 shadow-sm mx-auto">
+                                    <div class="draft-watermark" id="paperWatermark">
+                                        {{ $userRole === 'sekdin' ? 'LOLOS VERIFIKASI KASUBBAG - MENUNGGU PARAF SEKDIN' : 'KONSEP NASKAH - MENUNGGU VERIFIKASI KASUBBAG' }}
+                                    </div>
 
-                                <div class="d-flex align-items-center gap-3 text-center">
-                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 64px; height: 72px;">
-                                        <div class="border border-2 border-dark rounded-3 d-flex align-items-center justify-content-center w-100 h-100 bg-light">
-                                            <i class="bi bi-shield-shaded fs-1 text-dark" aria-hidden="true"></i>
+                                    <div class="d-flex align-items-center gap-3 text-center">
+                                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 64px; height: 72px;">
+                                            <div class="border border-2 border-dark rounded-3 d-flex align-items-center justify-content-center w-100 h-100 bg-light">
+                                                <i class="bi bi-shield-shaded fs-1 text-dark" aria-hidden="true"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold" style="font-size: 0.96rem; letter-spacing: 0.03em;">PEMERINTAH KABUPATEN OGAN KOMERING ILIR</div>
+                                            <div class="fw-bold" style="font-size: 1.14rem; letter-spacing: 0.02em;">DINAS KEPENDUDUKAN DAN PENCATATAN SIPIL</div>
+                                            <div style="font-size: 0.76rem;">Jl. Letnan Muchtar Saleh No. 01, Kayuagung, Kab. Ogan Komering Ilir, Sumatera Selatan 30611</div>
+                                            <div style="font-size: 0.73rem;">Telepon: (0712) 321456 &bull; Pos-el: disdukcapil@kaboki.go.id &bull; Laman: capil.kaboki.go.id</div>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold" style="font-size: 0.96rem; letter-spacing: 0.03em;">PEMERINTAH KABUPATEN OGAN KOMERING ILIR</div>
-                                        <div class="fw-bold" style="font-size: 1.14rem; letter-spacing: 0.02em;">DINAS KEPENDUDUKAN DAN PENCATATAN SIPIL</div>
-                                        <div style="font-size: 0.76rem;">Jl. Letnan Muchtar Saleh No. 01, Kayuagung, Kab. Ogan Komering Ilir, Sumatera Selatan 30611</div>
-                                        <div style="font-size: 0.73rem;">Telepon: (0712) 321456 &bull; Pos-el: disdukcapil@kaboki.go.id &bull; Laman: capil.kaboki.go.id</div>
-                                    </div>
-                                </div>
 
-                                <div class="kop-line"></div>
+                                    <div class="kop-line"></div>
 
-                                <div class="d-flex justify-content-between align-items-start mb-3" style="font-size: 0.9rem;">
-                                    <table class="table table-borderless table-sm mb-0" style="width: auto; font-size: 0.9rem;">
-                                        <tbody>
-                                            <tr>
-                                                <td class="p-0 pe-3">Nomor</td>
-                                                <td class="p-0 pe-2">:</td>
-                                                <td class="p-0 fw-bold" id="paperNoText">400/2763/disdukcapil/2026</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pe-3">Sifat</td>
-                                                <td class="p-0 pe-2">:</td>
-                                                <td class="p-0">Penting</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pe-3">Lampiran</td>
-                                                <td class="p-0 pe-2">:</td>
-                                                <td class="p-0">1 (Satu) Berkas Rekapitulasi</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pe-3">Perihal</td>
-                                                <td class="p-0 pe-2">:</td>
-                                                <td class="p-0 fw-bold text-decoration-underline" id="paperPerihalText">Penyampaian Laporan Rekapitulasi Penerbitan Akta Pencatatan Sipil Semester II</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="text-end flex-shrink-0">
-                                        <div>Kayuagung, 12 November 2026</div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3" style="font-size: 0.9rem;">
-                                    <div>Kepada Yth.</div>
-                                    <div class="fw-bold" id="paperTujuanText">Direktur Jenderal Kependudukan dan Pencatatan Sipil</div>
-                                    <div class="fw-bold">Kementerian Dalam Negeri Republik Indonesia</div>
-                                    <div>di -</div>
-                                    <div class="ps-4 fw-semibold">Tempat</div>
-                                </div>
-
-                                <div style="font-size: 0.91rem; text-align: justify;">
-                                    <p class="mb-3" style="text-indent: 2rem;">
-                                        Dalam rangka pelaksanaan tertib administrasi kependudukan serta evaluasi kinerja pelayanan pencatatan sipil di daerah, bersama ini kami sampaikan Laporan Rekapitulasi Penerbitan Akta Kelahiran, Akta Kematian, Akta Perkawinan, dan Sinkronisasi Data Kependudukan Semester II Tahun 2026 pada Dinas Kependudukan dan Pencatatan Sipil Kabupaten Ogan Komering Ilir.
-                                    </p>
-                                    <p class="mb-4" style="text-indent: 2rem;">
-                                        Seluruh data agregat yang dilampirkan telah melalui proses rekonsiliasi dengan basis data SIAK Terpusat. Demikian laporan ini kami sampaikan sebagai bahan evaluasi dan pemantauan tingkat pusat, atas perhatian dan arahan Bapak diucapkan terima kasih.
-                                    </p>
-                                </div>
-
-                                <div class="row justify-content-end mt-4">
-                                    <div class="col-12 col-sm-7 text-center">
-                                        <div class="fw-bold mb-2" style="font-size: 0.88rem;">KEPALA DINAS KEPENDUDUKAN DAN<br>PENCATATAN SIPIL KABUPATEN OKI,</div>
-
-                                        <div class="qr-locked-box my-2 d-flex align-items-center gap-3 text-start">
-                                            <div class="bg-white border rounded-2 p-2 d-flex align-items-center justify-content-center flex-shrink-0 text-secondary">
-                                                <i class="bi bi-lock-fill" style="font-size: 2.1rem; line-height: 1;" aria-hidden="true"></i>
+                                    {{-- TEMPLATE 1: SURAT KELUAR --}}
+                                    <div id="a4SectionSuratKeluar" class="{{ $activeKonsep['jenis'] === 'surat_keluar' ? '' : 'd-none' }}">
+                                        <div class="d-flex justify-content-between align-items-start mb-3" style="font-size: 0.9rem;">
+                                            <table class="table table-borderless table-sm mb-0" style="width: auto; font-size: 0.9rem;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="p-0 pe-3">Nomor</td>
+                                                        <td class="p-0 pe-2">:</td>
+                                                        <td class="p-0 fw-bold" id="paperNoText">{{ $activeKonsep['nomor'] }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="p-0 pe-3">Sifat</td>
+                                                        <td class="p-0 pe-2">:</td>
+                                                        <td class="p-0" id="paperSifatText">{{ $activeKonsep['sifat'] }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="p-0 pe-3">Lampiran</td>
+                                                        <td class="p-0 pe-2">:</td>
+                                                        <td class="p-0" id="paperLampiranText">{{ $activeKonsep['lampiran'] }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="p-0 pe-3">Perihal</td>
+                                                        <td class="p-0 pe-2">:</td>
+                                                        <td class="p-0 fw-bold text-decoration-underline" id="paperPerihalText">{{ $activeKonsep['perihal'] }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <div class="text-end flex-shrink-0">
+                                                <div>Kayuagung, <span id="paperTanggalText">{{ $activeKonsep['tanggal_display'] }}</span></div>
                                             </div>
-                                            <div>
-                                                <span class="badge bg-secondary mb-1" style="font-size: 0.63rem;">AREA QR CODE TERKUNCI</span>
-                                                <div class="fw-bold text-dark" style="font-size: 0.75rem; line-height: 1.3;">
-                                                    Menunggu Validasi Berjenjang (Kasubbag &amp; Sekdin)
+                                        </div>
+
+                                        <div class="mb-3" style="font-size: 0.9rem;">
+                                            <div>Kepada Yth.</div>
+                                            <div class="fw-bold" id="paperTujuanText">{{ $activeKonsep['tujuan'] }}</div>
+                                            <div>di -</div>
+                                            <div class="ps-4 fw-semibold">Tempat</div>
+                                        </div>
+
+                                        <div style="font-size: 0.91rem; text-align: justify;">
+                                            <p class="mb-3" style="text-indent: 2rem;">
+                                                Dalam rangka pelaksanaan tertib administrasi kependudukan serta peningkatan kualitas pelayanan publik pada Dinas Kependudukan dan Pencatatan Sipil Kabupaten Ogan Komering Ilir, bersama ini kami sampaikan naskah dinas terkait <span class="fw-semibold" id="paperBodyPerihalText">{{ $activeKonsep['perihal'] }}</span>.
+                                            </p>
+                                            <p class="mb-4" style="text-indent: 2rem;">
+                                                Seluruh data dan dokumen pendukung yang dilampirkan telah melalui pemeriksaan berjenjang sesuai Tata Naskah Dinas Elektronik (TNDE). Demikian disampaikan, atas perhatian dan kerja sama yang baik diucapkan terima kasih.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {{-- TEMPLATE 2: SPPD --}}
+                                    <div id="a4SectionSppd" class="{{ $activeKonsep['jenis'] === 'sppd' ? '' : 'd-none' }}">
+                                        <div class="text-center mb-3">
+                                            <div class="fw-bold text-decoration-underline" style="font-size: 1rem;">SURAT PERINTAH PERJALANAN DINAS (SPPD)</div>
+                                            <div style="font-size: 0.88rem;">Nomor: <span class="fw-bold" id="sppdNomorText">{{ $activeKonsep['nomor'] }}</span></div>
+                                        </div>
+
+                                        <table class="table table-bordered border-dark table-sm mb-3" style="font-size: 0.86rem;">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="width: 36%;" class="fw-semibold">1. Pejabat yang Memberi Perintah</td>
+                                                    <td>Kepala Dinas Kependudukan dan Pencatatan Sipil Kabupaten OKI</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-semibold">2. Nama / NIP Pegawai yang Diperintahkan</td>
+                                                    <td>
+                                                        <div class="fw-bold" id="sppdNamaPegawaiText">{{ $activeKonsep['extra']['nama_pegawai'] ?? '-' }}</div>
+                                                        <div>NIP. <span id="sppdNipPegawaiText">{{ $activeKonsep['extra']['nip_pegawai'] ?? '-' }}</span></div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-semibold">3. Jabatan / Instansi</td>
+                                                    <td id="sppdJabatanPegawaiText">{{ $activeKonsep['extra']['jabatan_pegawai'] ?? '-' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-semibold">4. Maksud Perjalanan Dinas</td>
+                                                    <td id="sppdUrusanText">{{ $activeKonsep['perihal'] }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-semibold">5. Tempat Berangkat &amp; Tempat Tujuan</td>
+                                                    <td>Kayuagung &rarr; <span class="fw-bold" id="sppdTujuanText">{{ $activeKonsep['tujuan'] }}</span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="fw-semibold">6. Tanggal Berangkat s/d Tanggal Kembali</td>
+                                                    <td>
+                                                        <span id="sppdBerangkatText">{{ $activeKonsep['extra']['tanggal_berangkat'] ?? '-' }}</span>
+                                                        s/d
+                                                        <span id="sppdKembaliText">{{ $activeKonsep['extra']['tanggal_kembali'] ?? '-' }}</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="text-end mb-2" style="font-size: 0.86rem;">
+                                            Dikeluarkan di: Kayuagung &bull; Pada Tanggal: <span id="sppdTanggalSuratText">{{ $activeKonsep['tanggal_display'] }}</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- TEMPLATE 3: BERITA ACARA --}}
+                                    <div id="a4SectionBeritaAcara" class="{{ $activeKonsep['jenis'] === 'berita_acara' ? '' : 'd-none' }}">
+                                        <div class="text-center mb-3">
+                                            <div class="fw-bold text-decoration-underline" style="font-size: 1rem;">BERITA ACARA KEDINASAN</div>
+                                            <div style="font-size: 0.88rem;">Nomor: <span class="fw-bold" id="baNomorText">{{ $activeKonsep['nomor'] }}</span></div>
+                                        </div>
+
+                                        <div style="font-size: 0.9rem; text-align: justify;">
+                                            <p class="mb-2" style="text-indent: 2rem;">
+                                                Pada tanggal <span class="fw-semibold" id="baTanggalText">{{ $activeKonsep['tanggal_display'] }}</span>, bertempat di Kantor Dinas Kependudukan dan Pencatatan Sipil Kabupaten Ogan Komering Ilir, kami yang bertanda tangan di bawah ini:
+                                            </p>
+                                            <div class="ps-3 mb-2">
+                                                <div><strong>PIHAK PERTAMA:</strong> Dinas Kependudukan dan Pencatatan Sipil Kabupaten Ogan Komering Ilir</div>
+                                                <div><strong>PIHAK KEDUA (MITRA):</strong> <span id="baPihakKeduaText" class="fw-bold">{{ $activeKonsep['tujuan'] }}</span></div>
+                                            </div>
+                                            <p class="mb-3" style="text-indent: 2rem;">
+                                                Kedua belah pihak sepakat membuat dan menandatangani Berita Acara tentang <strong id="baPerihalText">{{ $activeKonsep['perihal'] }}</strong> untuk dipergunakan sebagaimana mestinya sesuai ketentuan peraturan perundang-undangan yang berlaku.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row justify-content-end mt-4">
+                                        <div class="col-12 col-sm-7 text-center">
+                                            <div class="fw-bold mb-2" style="font-size: 0.88rem;">KEPALA DINAS KEPENDUDUKAN DAN<br>PENCATATAN SIPIL KABUPATEN OKI,</div>
+
+                                            <div class="qr-locked-box my-2 d-flex align-items-center gap-3 text-start">
+                                                <div class="bg-white border rounded-2 p-2 d-flex align-items-center justify-content-center flex-shrink-0 text-secondary">
+                                                    <i class="bi bi-lock-fill" style="font-size: 2.1rem; line-height: 1;" aria-hidden="true"></i>
                                                 </div>
-                                                <div class="text-secondary" style="font-size: 0.67rem;">QR Code UUID hanya dapat dibuka oleh Kepala Dinas</div>
+                                                <div>
+                                                    <span class="badge bg-secondary mb-1" style="font-size: 0.63rem;">AREA QR CODE TERKUNCI</span>
+                                                    <div class="fw-bold text-dark" style="font-size: 0.75rem; line-height: 1.3;">
+                                                        Menunggu Validasi Berjenjang (Kasubbag &amp; Sekdin)
+                                                    </div>
+                                                    <div class="text-secondary" style="font-size: 0.67rem;">QR Code UUID hanya dapat dibuka oleh Kepala Dinas</div>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div class="fw-bold text-decoration-underline mt-2" style="font-size: 0.9rem;">Drs. H. HENDRA SURYADI, M.Si</div>
-                                        <div style="font-size: 0.82rem;">Pembina Utama Muda (IV/c)</div>
-                                        <div style="font-size: 0.82rem;">NIP. 19710814 199803 1 004</div>
+                                            <div class="fw-bold text-decoration-underline mt-2" style="font-size: 0.9rem;">Drs. H. HENDRA SURYADI, M.Si</div>
+                                            <div style="font-size: 0.82rem;">Pembina Utama Muda (IV/c)</div>
+                                            <div style="font-size: 0.82rem;">NIP. 19710814 199803 1 004</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            @else
+                                <div class="text-center py-5">
+                                    <div class="mini-stat-icon mx-auto mb-3" style="width: 54px; height: 54px; background-color: #DCFCE7; color: #16A34A; font-size: 1.5rem;">
+                                        <i class="bi bi-check2-all"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-1">Antrean Verifikasi {{ $userRole === 'sekdin' ? 'Tahap 2 (Sekretaris Dinas)' : 'Tahap 1 (Kasubbag Umpeg)' }} Kosong</h6>
+                                    <p class="text-secondary small mb-0">
+                                        Seluruh konsep naskah dinas pada tahap ini telah selesai diperiksa.
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
                     <div class="surface-card overflow-hidden" id="tabel-antrean-konsep">
                         <div class="px-4 py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                             <div>
-                                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Antrean Konsep Naskah Dinas (Surat Keluar, SPPD, &amp; Berita Acara)</h6>
-                                <div class="text-secondary" style="font-size: 0.73rem;">Klik "Pilih Konsep" untuk memuat naskah ke lembar pemeriksaan di atas</div>
+                                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">
+                                    Antrean Konsep {{ $userRole === 'sekdin' ? 'Tahap 2: Menunggu Paraf Sekdin (valid_kasubbag)' : 'Tahap 1: Menunggu Verifikasi Kasubbag (draf)' }}
+                                </h6>
+                                <div class="text-secondary" style="font-size: 0.73rem;">Klik "Pilih Konsep" untuk memuat naskah ke lembar pemeriksaan dan mengeksekusi keputusan</div>
                             </div>
                             <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1" style="font-size: 0.71rem;">
-                                4 Konsep Aktif
+                                {{ $antreanKonsep->count() }} Konsep Aktif
                             </span>
                         </div>
 
@@ -700,93 +821,70 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr style="background-color: #EFF6FF;">
-                                        <td class="ps-4">
-                                            <div class="doc-number-mono text-primary">400/2763/disdukcapil/2026</div>
-                                            <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.66rem;">Kode 400 - Catatan Sipil</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">Surat Keluar</span>
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Laporan Rekapitulasi Akta Pencatatan Sipil Semester II</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Pengaju: Staf Admin Umpeg</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.7rem;">
-                                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Tahap 1: Kasubbag
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <button type="button" onclick="loadKonsepToPreview('400/2763/disdukcapil/2026', 'Penyampaian Laporan Rekapitulasi Penerbitan Akta Pencatatan Sipil Semester II', 'Direktur Jenderal Kependudukan dan Pencatatan Sipil')" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 0.72rem;">Pilih Konsep</button>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="doc-number-mono text-dark">090/091/SPPD/DUKCAPIL/2026</div>
-                                            <span class="badge bg-warning bg-opacity-15 text-dark fw-medium mt-1" style="font-size: 0.66rem;">Kode 800 - Kepegawaian</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.7rem;">SPPD</span>
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Rakor Teknis Pemutakhiran Data &amp; Blangko KTP-el</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Pegawai: Drs. H. Ahmad Fauzi, M.Si</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
-                                                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Tahap 2: Sekdin
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <button type="button" onclick="loadKonsepToPreview('090/091/SPPD/DUKCAPIL/2026', 'Surat Perintah Perjalanan Dinas Rakor Teknis Pemutakhiran Data & Blangko KTP-el', 'Dinas Dukcapil Provinsi Sumatera Selatan - Palembang')" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;">Pilih Konsep</button>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="doc-number-mono text-dark">400/028/BA-SIAK/XI/2026</div>
-                                            <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.66rem;">Kode 400 - Catatan Sipil</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #EDE9FE; color: #6D28D9; font-size: 0.7rem;">Berita Acara</span>
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">BAST Distribusi 1.500 Keping Blangko KTP-el</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Mitra: Kantor Kecamatan Kayuagung</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.7rem;">
-                                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Tahap 1: Kasubbag
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <button type="button" onclick="loadKonsepToPreview('400/028/BA-SIAK/XI/2026', 'Berita Acara Serah Terima (BAST) Distribusi 1.500 Keping Blangko KTP-el', 'Camat Kayuagung Kabupaten Ogan Komering Ilir')" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;">Pilih Konsep</button>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="doc-number-mono text-primary">00/2762/disdukcapil/2026</div>
-                                            <span class="badge bg-secondary bg-opacity-10 text-dark border fw-medium mt-1" style="font-size: 0.66rem;">Kode 00 - Keuangan</span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">Surat Keluar</span>
-                                        </td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Pengajuan SPP-GU Dana Operasional Pelayanan Keliling</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Tujuan: BPKAD Kabupaten OKI</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
-                                                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Tahap 2: Sekdin
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <button type="button" onclick="loadKonsepToPreview('00/2762/disdukcapil/2026', 'Pengajuan SPP-GU dan Laporan Realisasi Dana Operasional Pelayanan Keliling', 'Kepala BPKAD Kabupaten Ogan Komering Ilir')" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;">Pilih Konsep</button>
-                                        </td>
-                                    </tr>
+                                    @forelse($antreanKonsep as $item)
+                                        @php
+                                            $isSelected = $activeKonsep && $activeKonsep['key'] === $item['key'];
+                                            $bidangBadgeClass = match($item['kode_bidang']) {
+                                                '800' => 'bg-warning bg-opacity-15 text-dark',
+                                                '00' => 'bg-secondary bg-opacity-10 text-dark border',
+                                                default => 'bg-primary bg-opacity-10 text-primary',
+                                            };
+                                        @endphp
+                                        <tr id="row-{{ $item['key'] }}" class="konsep-row {{ $isSelected ? 'active-row' : '' }}">
+                                            <td class="ps-4">
+                                                <div class="doc-number-mono text-primary">{{ $item['nomor'] }}</div>
+                                                <span class="badge {{ $bidangBadgeClass }} fw-medium mt-1" style="font-size: 0.66rem;">
+                                                    Kode {{ $item['kode_bidang'] }} - {{ $item['nama_bidang'] }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: {{ $item['jenis_badge_bg'] }}; color: {{ $item['jenis_badge_color'] }}; font-size: 0.7rem;">
+                                                    {{ $item['jenis_label'] }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ \Illuminate\Support\Str::limit($item['perihal'], 68) }}</div>
+                                                <div class="text-secondary" style="font-size: 0.72rem;">{{ $item['sub_info'] }}</div>
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+                                                    <span class="text-secondary" style="font-size: 0.68rem;">
+                                                        <i class="bi bi-person-check me-1"></i>Pengaju: {{ $item['pengaju_nama'] }}
+                                                    </span>
+                                                    @if(!empty($item['file_url']))
+                                                        <a href="{{ $item['file_url'] }}" target="_blank" class="badge bg-info bg-opacity-10 text-primary text-decoration-none border border-primary border-opacity-25" style="font-size: 0.65rem;">
+                                                            <i class="bi bi-paperclip me-1"></i>Lampiran Tersedia
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($item['status'] === 'valid_kasubbag')
+                                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
+                                                        <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Tahap 2: Sekdin
+                                                    </span>
+                                                @else
+                                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.7rem;">
+                                                        <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Tahap 1: Kasubbag
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="pe-4 text-end">
+                                                <button type="button"
+                                                        id="btn-select-{{ $item['key'] }}"
+                                                        onclick="selectKonsepByKey('{{ $item['key'] }}')"
+                                                        class="btn btn-sm {{ $isSelected ? 'btn-primary' : 'btn-outline-primary' }} py-1 px-2 btn-pilih-konsep"
+                                                        style="font-size: 0.72rem;">
+                                                    {{ $isSelected ? 'Sedang Diperiksa' : 'Pilih Konsep' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-secondary">
+                                                <i class="bi bi-inbox fs-4 d-block mb-1"></i>
+                                                Tidak ada konsep naskah dinas berstatus <code>{{ $targetStatus }}</code> yang menunggu pemeriksaan Anda.
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -802,7 +900,7 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Status Alur Hierarki Berjenjang</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Pelacakan posisi verifikasi naskah dinas</div>
+                                    <div class="text-secondary" style="font-size: 0.73rem;">Riwayat log verifikasi naskah dinas dari database</div>
                                 </div>
                             </div>
                             <span id="timelineActiveBadge" class="badge rounded-pill {{ auth()->user()->role === 'sekdin' ? 'bg-info text-dark' : 'bg-warning text-dark' }} fw-semibold px-2 py-1" style="font-size: 0.69rem;">
@@ -810,7 +908,14 @@
                             </span>
                         </div>
 
-                        <div class="p-4">
+                        <div class="p-4" id="timelineContainer">
+                            @php
+                                $logsCollection = collect($activeKonsep['logs'] ?? []);
+                                $logStaf = $logsCollection->where('tahap_verifikasi', 'staf_admin')->last();
+                                $logKasubbag = $logsCollection->where('tahap_verifikasi', 'kasubbag_umpeg')->where('status_aksi', 'valid_kasubbag')->last();
+                            @endphp
+
+                            {{-- Step 1: Staf Admin --}}
                             <div class="timeline-step">
                                 <div class="timeline-dot" style="background-color: #DCFCE7; color: #16A34A;">
                                     <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
@@ -819,32 +924,75 @@
                                     <span class="fw-bold text-dark" style="font-size: 0.83rem;">Staf Admin Umpeg (Pengaju Konsep)</span>
                                     <span class="badge rounded-pill px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.67rem;">Diajukan</span>
                                 </div>
-                                <div class="text-secondary" style="font-size: 0.76rem;">Rizky Pratama, S.IP &mdash; Registrasi Nomor 400/2763/disdukcapil/2026</div>
-                                <div class="text-secondary mt-1 doc-number-mono" style="font-size: 0.7rem;"><i class="bi bi-clock me-1" aria-hidden="true"></i>12 Nov 2026, 08:30 WIB</div>
+                                <div class="text-secondary" style="font-size: 0.76rem;" id="tlStafDesc">
+                                    {{ $logStaf['verifikator_nama'] ?? ($activeKonsep['pengaju_nama'] ?? 'Staf Admin Umpeg') }}
+                                    &mdash; {{ $logStaf['catatan'] ?? ('Registrasi Nomor ' . ($activeKonsep['nomor'] ?? '-')) }}
+                                </div>
+                                <div class="text-secondary mt-1 doc-number-mono" style="font-size: 0.7rem;" id="tlStafTime">
+                                    <i class="bi bi-clock me-1" aria-hidden="true"></i>{{ $logStaf['waktu'] ?? 'Tercatat di Buku Agenda' }}
+                                </div>
                             </div>
 
+                            {{-- Step 2: Kasubbag Umpeg --}}
                             <div class="timeline-step">
-                                <div class="timeline-dot" style="background-color: #FEF3C7; color: #D97706; border: 2px solid #F59E0B;">
-                                    <i class="bi bi-search" aria-hidden="true"></i>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-dark" style="font-size: 0.83rem;">Kasubbag Umpeg (Verifikasi Tahap 1)</span>
-                                    <span class="badge rounded-pill bg-warning text-dark fw-semibold px-2 py-1" style="font-size: 0.67rem;">Sedang Diperiksa</span>
-                                </div>
-                                <div class="fw-medium" style="font-size: 0.76rem; color: #B45309;">Hj. Siti Rahmawati, S.Sos., M.Si &mdash; Pemeriksaan kode klasifikasi &amp; redaksi</div>
+                                @if($userRole === 'sekdin' || ($activeKonsep && $activeKonsep['status'] === 'valid_kasubbag'))
+                                    <div class="timeline-dot" id="tlKasubbagDot" style="background-color: #DCFCE7; color: #16A34A;">
+                                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark" style="font-size: 0.83rem;">Kasubbag Umpeg (Verifikasi Tahap 1)</span>
+                                        <span class="badge rounded-pill px-2 py-1" id="tlKasubbagBadge" style="background-color: #DCFCE7; color: #15803D; font-size: 0.67rem;">Disetujui Kasubbag</span>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 0.76rem;" id="tlKasubbagDesc">
+                                        {{ $logKasubbag['verifikator_nama'] ?? 'Hj. Siti Rahmawati, S.Sos., M.Si' }}
+                                        &mdash; {{ $logKasubbag['catatan'] ?? 'Kode klasifikasi & redaksi sesuai standar TNDE.' }}
+                                    </div>
+                                    <div class="text-secondary mt-1 doc-number-mono" style="font-size: 0.7rem;" id="tlKasubbagTime">
+                                        <i class="bi bi-clock me-1" aria-hidden="true"></i>{{ $logKasubbag['waktu'] ?? 'Telah diverifikasi Tahap 1' }}
+                                    </div>
+                                @else
+                                    <div class="timeline-dot" id="tlKasubbagDot" style="background-color: #FEF3C7; color: #D97706; border: 2px solid #F59E0B;">
+                                        <i class="bi bi-search" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark" style="font-size: 0.83rem;">Kasubbag Umpeg (Verifikasi Tahap 1)</span>
+                                        <span class="badge rounded-pill bg-warning text-dark fw-semibold px-2 py-1" id="tlKasubbagBadge" style="font-size: 0.67rem;">Sedang Diperiksa</span>
+                                    </div>
+                                    <div class="fw-medium" style="font-size: 0.76rem; color: #B45309;" id="tlKasubbagDesc">
+                                        {{ $userName }} &mdash; Pemeriksaan kode klasifikasi, lampiran, &amp; redaksi
+                                    </div>
+                                    <div class="text-secondary mt-1 doc-number-mono d-none" style="font-size: 0.7rem;" id="tlKasubbagTime"></div>
+                                @endif
                             </div>
 
+                            {{-- Step 3: Sekretaris Dinas --}}
                             <div class="timeline-step">
-                                <div class="timeline-dot" style="background-color: #DBEAFE; color: #2563EB;">
-                                    <i class="bi bi-vector-pen" aria-hidden="true"></i>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold text-dark" style="font-size: 0.83rem;">Sekretaris Dinas (Verifikasi Tahap 2 / Paraf)</span>
-                                    <span class="badge rounded-pill px-2 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.67rem;">Tahap Berikutnya</span>
-                                </div>
-                                <div class="text-secondary" style="font-size: 0.76rem;">Ir. H. Bambang Irawan, M.M &mdash; Paraf koordinasi sebelum naik ke Kadin</div>
+                                @if($userRole === 'sekdin')
+                                    <div class="timeline-dot" style="background-color: #DBEAFE; color: #2563EB; border: 2px solid #2563EB;">
+                                        <i class="bi bi-vector-pen" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark" style="font-size: 0.83rem;">Sekretaris Dinas (Verifikasi Tahap 2 / Paraf)</span>
+                                        <span class="badge rounded-pill bg-primary text-white fw-semibold px-2 py-1" style="font-size: 0.67rem;">Sedang Diparaf</span>
+                                    </div>
+                                    <div class="fw-medium text-primary" style="font-size: 0.76rem;">
+                                        {{ $userName }} &mdash; Paraf koordinasi sebelum diteruskan ke Kepala Dinas
+                                    </div>
+                                @else
+                                    <div class="timeline-dot" style="background-color: #DBEAFE; color: #2563EB;">
+                                        <i class="bi bi-vector-pen" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark" style="font-size: 0.83rem;">Sekretaris Dinas (Verifikasi Tahap 2 / Paraf)</span>
+                                        <span class="badge rounded-pill px-2 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.67rem;">Tahap Berikutnya</span>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 0.76rem;">
+                                        Ir. H. Bambang Irawan, M.M &mdash; Paraf koordinasi sebelum naik ke Kadin
+                                    </div>
+                                @endif
                             </div>
 
+                            {{-- Step 4: Kepala Dinas --}}
                             <div class="timeline-step">
                                 <div class="timeline-dot" style="background-color: #F3F4F6; color: #6B7280;">
                                     <i class="bi bi-qr-code" aria-hidden="true"></i>
@@ -858,83 +1006,104 @@
                         </div>
                     </div>
 
-                    <div class="surface-card mb-4">
-                        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="width: 36px; height: 36px; font-size: 1rem; background-color: #DCFCE7; color: #16A34A;">
-                                    <i class="bi bi-ui-checks" aria-hidden="true"></i>
+                    <form id="formApproveVerifikasi"
+                          method="POST"
+                          action="{{ $activeKonsep['approve_url'] ?? '#' }}">
+                        @csrf
+
+                        <div class="surface-card mb-4">
+                            <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="mini-stat-icon" style="width: 36px; height: 36px; font-size: 1rem; background-color: #DCFCE7; color: #16A34A;">
+                                        <i class="bi bi-ui-checks" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Checklist Standar Tata Naskah Dinas</h6>
+                                        <div class="text-secondary" style="font-size: 0.73rem;">Disimpan ke kolom JSON <code>checklist_pemeriksaan</code> pada <code>log_verifikasi</code></div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Checklist Standar Tata Naskah Dinas</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Parameter wajib verifikasi Kasubbag Umpeg &amp; Sekdin</div>
+                            </div>
+
+                            <div class="p-4 d-flex flex-column gap-2">
+                                <div class="checklist-item form-check m-0 ps-4">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="checklist[kode_klasifikasi]" value="1" id="chk1" checked>
+                                    <label class="form-check-label fw-medium text-dark" for="chk1" style="font-size: 0.8rem;">
+                                        Kesesuaian <strong>Kode Klasifikasi Bidang (400 / 800 / 00)</strong> &amp; Nomor Urut Buku Agenda
+                                    </label>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div class="p-4 d-flex flex-column gap-2">
-                            <div class="checklist-item form-check m-0 ps-4">
-                                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk1" checked>
-                                <label class="form-check-label fw-medium text-dark" for="chk1" style="font-size: 0.8rem;">
-                                    Kesesuaian <strong>Kode Klasifikasi Bidang (400 / 800 / 00)</strong> &amp; Nomor Urut Buku Agenda
-                                </label>
-                            </div>
-
-                            <div class="checklist-item form-check m-0 ps-4">
-                                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk2" checked>
-                                <label class="form-check-label fw-medium text-dark" for="chk2" style="font-size: 0.8rem;">
-                                    Kelengkapan berkas lampiran pendukung (Rekapitulasi SIAK Semester II)
-                                </label>
-                            </div>
-
-                            <div class="checklist-item form-check m-0 ps-4">
-                                <input class="form-check-input ms-0 me-2" type="checkbox" id="chk3" checked>
-                                <label class="form-check-label fw-medium text-dark" for="chk3" style="font-size: 0.8rem;">
-                                    Ketepatan redaksi surat, tata bahasa kedinasan, serta alamat instansi tujuan
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="surface-card">
-                        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="width: 36px; height: 36px; font-size: 1rem; background-color: #FEF3C7; color: #D97706;">
-                                    <i class="bi bi-check2-square" aria-hidden="true"></i>
+                                <div class="checklist-item form-check m-0 ps-4">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="checklist[kelengkapan_lampiran]" value="1" id="chk2" checked>
+                                    <label class="form-check-label fw-medium text-dark" for="chk2" style="font-size: 0.8rem;">
+                                        Kelengkapan berkas lampiran pendukung / kesesuaian data pokok naskah dinas
+                                    </label>
                                 </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Eksekusi Keputusan Verifikasi</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Otorisasi satu klik tanpa PIN TTE (Khusus Verifikator I &amp; II)</div>
+
+                                <div class="checklist-item form-check m-0 ps-4">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="checklist[ketepatan_redaksi]" value="1" id="chk3" checked>
+                                    <label class="form-check-label fw-medium text-dark" for="chk3" style="font-size: 0.8rem;">
+                                        Ketepatan redaksi naskah, tata bahasa kedinasan, serta pihak/instansi tujuan
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-4">
-                            <div class="p-2 px-3 rounded-2 mb-3 border d-flex align-items-center gap-2" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.74rem;">
-                                <i class="bi bi-info-circle-fill text-primary" aria-hidden="true"></i>
-                                <span class="text-secondary">Sesuai aturan bisnis, Kasubbag &amp; Sekdin melakukan validasi klik tanpa Passphrase TTE.</span>
+                        <div class="surface-card">
+                            <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="mini-stat-icon" style="width: 36px; height: 36px; font-size: 1rem; background-color: #FEF3C7; color: #D97706;">
+                                        <i class="bi bi-check2-square" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Eksekusi Keputusan Verifikasi</h6>
+                                        <div class="text-secondary" style="font-size: 0.73rem;">Otorisasi satu klik tanpa PIN TTE (Khusus Verifikator I &amp; II)</div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <form onsubmit="openVerifSuksesModal(); return false;">
+                            <div class="p-4">
+                                <div class="p-2 px-3 rounded-2 mb-3 border d-flex align-items-center gap-2" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.74rem;">
+                                    <i class="bi bi-info-circle-fill text-primary" aria-hidden="true"></i>
+                                    <span class="text-secondary">
+                                        @if($userRole === 'sekdin')
+                                            Persetujuan Sekretaris Dinas akan mengubah status naskah menjadi <code>valid_sekdin</code> (Antrean TTE Kepala Dinas).
+                                        @else
+                                            Persetujuan Kasubbag Umpeg akan mengubah status naskah menjadi <code>valid_kasubbag</code> (Antrean Paraf Sekretaris Dinas).
+                                        @endif
+                                    </span>
+                                </div>
+
                                 <div class="mb-3">
                                     <label for="catatanParaf" class="form-label fw-semibold text-dark small mb-1">
-                                        Catatan Koreksi / Paraf Hierarki
+                                        Catatan Verifikasi / Paraf Hierarki
                                     </label>
-                                    <textarea id="catatanParaf" class="form-control form-control-sm" rows="3" placeholder="Tuliskan catatan paraf koordinasi atau instruksi revisi untuk Staf Admin...">Konsep surat keluar kode 400 dan lampiran rekapitulasi akta telah sesuai standar TNDE. Diteruskan ke jenjang berikutnya.</textarea>
+                                    <textarea id="catatanParaf" name="catatan" class="form-control form-control-sm" rows="3" placeholder="Tuliskan catatan paraf koordinasi atau verifikasi naskah...">{{ old('catatan', $userRole === 'sekdin' ? 'Telah diparaf koordinasi oleh Sekretaris Dinas. Konsep naskah siap diteruskan ke Kepala Dinas untuk otorisasi TTE QR Code.' : 'Kode klasifikasi, lampiran, dan redaksi naskah dinas telah sesuai standar TNDE. Diteruskan ke Sekretaris Dinas.') }}</textarea>
                                 </div>
 
                                 <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-success fw-semibold py-2 px-3 rounded-2 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="font-size: 0.85rem;">
+                                    <button type="submit"
+                                            id="btnSubmitApprove"
+                                            class="btn btn-success fw-semibold py-2 px-3 rounded-2 d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                                            style="font-size: 0.85rem;"
+                                            {{ !$activeKonsep ? 'disabled' : '' }}>
                                         <i class="bi bi-check2-circle" aria-hidden="true"></i>
-                                        <span>Validasi &amp; Teruskan ke Jenjang Berikutnya</span>
+                                        <span>
+                                            {{ $userRole === 'sekdin' ? 'Paraf & Teruskan ke Antrean TTE Kepala Dinas' : 'Setujui & Teruskan ke Sekretaris Dinas (Tahap 2)' }}
+                                        </span>
                                     </button>
-                                    <button type="button" data-bs-toggle="modal" data-bs-target="#modalRevisiStaf" class="btn btn-outline-danger btn-sm fw-medium py-2 px-3 rounded-2 d-flex align-items-center justify-content-center gap-2" style="font-size: 0.82rem;">
+                                    <button type="button"
+                                            id="btnOpenModalRevisi"
+                                            onclick="prepareAndOpenRevisiModal()"
+                                            class="btn btn-outline-danger btn-sm fw-medium py-2 px-3 rounded-2 d-flex align-items-center justify-content-center gap-2"
+                                            style="font-size: 0.82rem;"
+                                            {{ !$activeKonsep ? 'disabled' : '' }}>
                                         <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                                        <span>Kembalikan ke Staf untuk Revisi</span>
+                                        <span>Kembalikan ke Staf Admin untuk Revisi</span>
                                     </button>
                                 </div>
-                            </form>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -946,43 +1115,84 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalVerifSukses" tabindex="-1" aria-hidden="true">
+{{-- MODAL KEMBALIKAN KE STAF ADMIN UNTUK REVISI --}}
+<div class="modal fade" id="modalRevisiStaf" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-success d-flex align-items-center gap-2">
-                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                    <span>Verifikasi Berjenjang Berhasil Disimpan</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4 small">
-                <p class="text-secondary mb-2">Konsep naskah dinas telah divalidasi/diparaf dan diteruskan ke jenjang berikutnya hingga antrean <strong>Otorisasi TTE Kepala Dinas</strong>.</p>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Periksa Konsep Lain</button>
-                <a href="/buku-besar" class="btn btn-sm btn-primary fw-semibold">Lihat Status di Buku Besar &rarr;</a>
-            </div>
+            <form id="formRevisiVerifikasi" method="POST" action="{{ $activeKonsep['revisi_url'] ?? '#' }}">
+                @csrf
+                <input type="hidden" name="checklist[kode_klasifikasi]" id="revChk1" value="1">
+                <input type="hidden" name="checklist[kelengkapan_lampiran]" id="revChk2" value="1">
+                <input type="hidden" name="checklist[ketepatan_redaksi]" id="revChk3" value="1">
+
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <span>Kembalikan Konsep ke Staf Admin (Status: Revisi)</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body p-4 small">
+                    <div class="p-2 px-3 rounded-2 mb-3 border" style="background-color: #FEF2F2; border-color: #FECACA !important;">
+                        <div class="text-secondary" style="font-size: 0.72rem;">Nomor Naskah yang Dikembalikan:</div>
+                        <div class="doc-number-mono text-danger fw-bold" id="modalRevisiNomor">{{ $activeKonsep['nomor'] ?? '-' }}</div>
+                        <div class="text-dark fw-medium mt-1" id="modalRevisiPerihal" style="font-size: 0.76rem;">{{ $activeKonsep['perihal'] ?? '-' }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="inputCatatanRevisi" class="form-label fw-semibold text-dark mb-1">
+                            Catatan Koreksi / Instruksi Revisi <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="catatan_revisi"
+                                  id="inputCatatanRevisi"
+                                  class="form-control form-control-sm"
+                                  rows="4"
+                                  required
+                                  minlength="5"
+                                  placeholder="Jelaskan secara spesifik bagian redaksi, kode klasifikasi, tanggal, atau lampiran yang wajib diperbaiki oleh Staf Admin...">{{ old('catatan_revisi') }}</textarea>
+                        <div class="form-text" style="font-size: 0.71rem;">
+                            Catatan ini akan disimpan ke kolom <code>catatan_revisi</code> pada naskah dan tabel <code>log_verifikasi</code>, serta langsung tampil di halaman Dashboard &amp; Registrasi Staf Admin.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-danger fw-semibold">
+                        <i class="bi bi-send-exclamation me-1"></i>Konfirmasi Kembalikan untuk Revisi
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalRevisiStaf" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- MODAL PRATINJAU LAMPIRAN DOKUMEN YANG DIUNGGGAH --}}
+<div class="modal fade" id="modalPratinjauLampiran" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
             <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2">
-                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                    <span>Kembalikan Konsep ke Staf Admin</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <div>
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger" aria-hidden="true"></i>
+                        <span>Pratinjau Berkas Lampiran Naskah Dinas</span>
+                    </h6>
+                    <div class="text-secondary small" id="modalLampiranSubtitle">{{ $activeKonsep['file_name'] ?? '-' }}</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a id="modalLampiranDownloadLink"
+                       href="{{ $activeKonsep['file_url'] ?? '#' }}"
+                       target="_blank"
+                       class="btn btn-sm btn-primary fw-semibold">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Buka / Unduh di Tab Baru
+                    </a>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
             </div>
-            <div class="modal-body p-4 small">
-                <p class="text-secondary mb-0">Konsep naskah ini akan dikembalikan ke <strong>Staf Admin Subbag Umpeg</strong> beserta catatan koreksi Anda untuk diperbaiki.</p>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-sm btn-danger fw-semibold" data-bs-dismiss="modal">Konfirmasi Kembalikan Konsep</button>
+            <div class="modal-body p-0 bg-light" style="height: 72vh;">
+                <iframe id="iframeLampiranPreview"
+                        src="{{ $activeKonsep['file_url'] ?? 'about:blank' }}"
+                        class="w-100 h-100 border-0"
+                        title="Pratinjau Dokumen Lampiran"></iframe>
             </div>
         </div>
     </div>
@@ -992,16 +1202,147 @@
 <script>
     localStorage.removeItem('esurat_locked_role');
 
-    function loadKonsepToPreview(nomor, perihal, tujuan) {
-        document.getElementById('headerPreviewNo').textContent = nomor;
-        document.getElementById('paperNoText').textContent = nomor;
-        document.getElementById('paperPerihalText').textContent = perihal;
-        document.getElementById('paperTujuanText').textContent = tujuan;
-        window.scrollTo({ top: 180, behavior: 'smooth' });
+    const ANTREAN_DATA = @json($antreanKonsep->keyBy('key'));
+    const CURRENT_USER_ROLE = @json($userRole);
+    const CURRENT_USER_NAME = @json($userName);
+    let currentSelectedKey = @json($activeKonsep['key'] ?? null);
+
+    function selectKonsepByKey(key) {
+        const item = ANTREAN_DATA[key];
+        if (!item) return;
+
+        currentSelectedKey = key;
+
+        // Highlight active row & button in table
+        document.querySelectorAll('.konsep-row').forEach(tr => tr.classList.remove('active-row'));
+        const activeRow = document.getElementById('row-' + key);
+        if (activeRow) activeRow.classList.add('active-row');
+
+        document.querySelectorAll('.btn-pilih-konsep').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+            btn.textContent = 'Pilih Konsep';
+        });
+        const activeBtn = document.getElementById('btn-select-' + key);
+        if (activeBtn) {
+            activeBtn.classList.remove('btn-outline-primary');
+            activeBtn.classList.add('btn-primary');
+            activeBtn.textContent = 'Sedang Diperiksa';
+        }
+
+        // Update Header Preview Info
+        document.getElementById('headerPreviewNo').textContent = item.nomor;
+        const jenisBadge = document.getElementById('headerPreviewJenisBadge');
+        if (jenisBadge) {
+            jenisBadge.textContent = item.jenis_label;
+            jenisBadge.style.backgroundColor = item.jenis_badge_bg;
+            jenisBadge.style.color = item.jenis_badge_color;
+        }
+
+        // Update Attachment Preview Button
+        const btnLampiran = document.getElementById('btnPreviewLampiran');
+        const badgeNoLampiran = document.getElementById('badgeNoLampiran');
+        if (item.file_url) {
+            btnLampiran.classList.remove('d-none');
+            badgeNoLampiran.classList.add('d-none');
+            document.getElementById('modalLampiranSubtitle').textContent = item.nomor + ' — ' + (item.file_name || 'Lampiran');
+            document.getElementById('modalLampiranDownloadLink').href = item.file_url;
+            document.getElementById('iframeLampiranPreview').src = item.file_url;
+        } else {
+            btnLampiran.classList.add('d-none');
+            badgeNoLampiran.classList.remove('d-none');
+        }
+
+        // Switch A4 Template Section based on document jenis
+        const secSk = document.getElementById('a4SectionSuratKeluar');
+        const secSppd = document.getElementById('a4SectionSppd');
+        const secBa = document.getElementById('a4SectionBeritaAcara');
+
+        if (secSk && secSppd && secBa) {
+            secSk.classList.toggle('d-none', item.jenis !== 'surat_keluar');
+            secSppd.classList.toggle('d-none', item.jenis !== 'sppd');
+            secBa.classList.toggle('d-none', item.jenis !== 'berita_acara');
+        }
+
+        if (item.jenis === 'surat_keluar') {
+            document.getElementById('paperNoText').textContent = item.nomor;
+            document.getElementById('paperSifatText').textContent = item.sifat;
+            document.getElementById('paperLampiranText').textContent = item.lampiran;
+            document.getElementById('paperPerihalText').textContent = item.perihal;
+            document.getElementById('paperTanggalText').textContent = item.tanggal_display;
+            document.getElementById('paperTujuanText').textContent = item.tujuan;
+            document.getElementById('paperBodyPerihalText').textContent = item.perihal;
+        } else if (item.jenis === 'sppd') {
+            document.getElementById('sppdNomorText').textContent = item.nomor;
+            document.getElementById('sppdNamaPegawaiText').textContent = item.extra.nama_pegawai || '-';
+            document.getElementById('sppdNipPegawaiText').textContent = item.extra.nip_pegawai || '-';
+            document.getElementById('sppdJabatanPegawaiText').textContent = item.extra.jabatan_pegawai || '-';
+            document.getElementById('sppdUrusanText').textContent = item.perihal;
+            document.getElementById('sppdTujuanText').textContent = item.tujuan;
+            document.getElementById('sppdBerangkatText').textContent = item.extra.tanggal_berangkat || '-';
+            document.getElementById('sppdKembaliText').textContent = item.extra.tanggal_kembali || '-';
+            document.getElementById('sppdTanggalSuratText').textContent = item.tanggal_display;
+        } else if (item.jenis === 'berita_acara') {
+            document.getElementById('baNomorText').textContent = item.nomor;
+            document.getElementById('baTanggalText').textContent = item.tanggal_display;
+            document.getElementById('baPihakKeduaText').textContent = item.tujuan;
+            document.getElementById('baPerihalText').textContent = item.perihal;
+        }
+
+        // Update Timeline from item.logs
+        const logs = Array.isArray(item.logs) ? item.logs : [];
+        const logStaf = [...logs].reverse().find(l => l.tahap_verifikasi === 'staf_admin');
+        const logKasubbag = [...logs].reverse().find(l => l.tahap_verifikasi === 'kasubbag_umpeg' && l.status_aksi === 'valid_kasubbag');
+
+        const tlStafDesc = document.getElementById('tlStafDesc');
+        const tlStafTime = document.getElementById('tlStafTime');
+        if (tlStafDesc) {
+            tlStafDesc.textContent = (logStaf ? logStaf.verifikator_nama : item.pengaju_nama) + ' — ' + (logStaf && logStaf.catatan ? logStaf.catatan : ('Registrasi Nomor ' + item.nomor));
+        }
+        if (tlStafTime) {
+            tlStafTime.innerHTML = '<i class="bi bi-clock me-1" aria-hidden="true"></i>' + (logStaf ? logStaf.waktu : 'Tercatat di Buku Agenda');
+        }
+
+        const tlKasubbagDesc = document.getElementById('tlKasubbagDesc');
+        const tlKasubbagTime = document.getElementById('tlKasubbagTime');
+        if (CURRENT_USER_ROLE === 'sekdin' && tlKasubbagDesc) {
+            tlKasubbagDesc.textContent = (logKasubbag ? logKasubbag.verifikator_nama : 'Kasubbag Umpeg') + ' — ' + (logKasubbag && logKasubbag.catatan ? logKasubbag.catatan : 'Telah disetujui pada Tahap 1.');
+            if (tlKasubbagTime) {
+                tlKasubbagTime.classList.remove('d-none');
+                tlKasubbagTime.innerHTML = '<i class="bi bi-clock me-1" aria-hidden="true"></i>' + (logKasubbag ? logKasubbag.waktu : 'Diverifikasi Tahap 1');
+            }
+        }
+
+        // Update Form Action URLs (Approve & Revisi)
+        const formApprove = document.getElementById('formApproveVerifikasi');
+        if (formApprove) formApprove.action = item.approve_url;
+
+        const formRevisi = document.getElementById('formRevisiVerifikasi');
+        if (formRevisi) formRevisi.action = item.revisi_url;
+
+        document.getElementById('modalRevisiNomor').textContent = item.nomor;
+        document.getElementById('modalRevisiPerihal').textContent = item.perihal;
+
+        window.scrollTo({ top: 160, behavior: 'smooth' });
     }
 
-    function openVerifSuksesModal() {
-        new bootstrap.Modal(document.getElementById('modalVerifSukses')).show();
+    function prepareAndOpenRevisiModal() {
+        // Sync checkbox values into hidden inputs inside modalRevisiStaf
+        document.getElementById('revChk1').value = document.getElementById('chk1').checked ? '1' : '0';
+        document.getElementById('revChk2').value = document.getElementById('chk2').checked ? '1' : '0';
+        document.getElementById('revChk3').value = document.getElementById('chk3').checked ? '1' : '0';
+
+        new bootstrap.Modal(document.getElementById('modalRevisiStaf')).show();
+    }
+
+    function openModalLampiran() {
+        const item = currentSelectedKey ? ANTREAN_DATA[currentSelectedKey] : null;
+        if (item && item.file_url) {
+            document.getElementById('modalLampiranSubtitle').textContent = item.nomor + ' — ' + (item.file_name || 'Lampiran');
+            document.getElementById('modalLampiranDownloadLink').href = item.file_url;
+            document.getElementById('iframeLampiranPreview').src = item.file_url;
+        }
+        new bootstrap.Modal(document.getElementById('modalPratinjauLampiran')).show();
     }
 </script>
 </body>

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RegistrasiNaskahController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VerifikasiHierarkiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,11 +53,11 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/admin/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('admin.users.toggle-active');
     });
 
-    // Rute khusus Kasubbag Umpeg & Sekretaris Dinas (Verifikator Hierarki)
+    // Rute khusus Kasubbag Umpeg & Sekretaris Dinas (Verifikator Hierarki Tahap 1 & Tahap 2)
     Route::middleware(['role:kasubbag,sekdin'])->group(function () {
-        Route::get('/verifikasi-hierarki', function () {
-            return view('verifikasi-hierarki');
-        })->name('verifikasi.hierarki');
+        Route::get('/verifikasi-hierarki', [VerifikasiHierarkiController::class, 'index'])->name('verifikasi.hierarki');
+        Route::post('/verifikasi-hierarki/{jenis}/{id}/setujui', [VerifikasiHierarkiController::class, 'approve'])->name('verifikasi.hierarki.approve');
+        Route::post('/verifikasi-hierarki/{jenis}/{id}/revisi', [VerifikasiHierarkiController::class, 'revisi'])->name('verifikasi.hierarki.revisi');
     });
 
     // Rute khusus Kepala Dinas (Kadin)
