@@ -127,7 +127,34 @@
         }
     </style>
 </head>
-<body data-default-role="{{ $activeRole ?? 'admin' }}">
+<body>
+@php
+    $authUser = auth()->user();
+    $userRole = $authUser->role ?? 'admin';
+    $userName = $authUser->nama_lengkap ?? 'Pegawai Disdukcapil';
+    $userJabatan = $authUser->jabatan ?? 'Subbag Umum & Kepegawaian';
+    $userNip = $authUser->nip ?? '-';
+
+    $cleanName = preg_replace('/^(Drs\.|Ir\.|H\.|Hj\.|Dr\.|Prof\.)\s+/i', '', $userName);
+    $cleanName = preg_replace('/^(Drs\.|Ir\.|H\.|Hj\.|Dr\.|Prof\.)\s+/i', '', $cleanName);
+    $cleanName = explode(',', $cleanName)[0];
+    $words = array_values(array_filter(explode(' ', trim($cleanName))));
+    $userInitials = strtoupper(substr($words[0] ?? 'P', 0, 1) . substr($words[1] ?? ($words[0] ?? 'D'), 0, 1));
+
+    $avatarBadgeClass = match ($userRole) {
+        'kadin' => 'bg-success text-white',
+        'kasubbag' => 'bg-warning text-dark',
+        'sekdin' => 'bg-info text-dark',
+        default => 'bg-primary text-white',
+    };
+
+    $roleStatusLabel = match ($userRole) {
+        'kadin' => 'Otoritas: Kepala Dinas',
+        'kasubbag' => 'Otoritas: Kasubbag (Verif I)',
+        'sekdin' => 'Otoritas: Sekdin (Verif II)',
+        default => 'Otoritas: Staf Admin',
+    };
+@endphp
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
@@ -142,91 +169,145 @@
         </div>
 
         <div class="px-3 py-2 d-flex flex-column gap-1 flex-grow-1 overflow-y-auto">
-            <div class="sidebar-section-label">MENU UTAMA &amp; AGENDA</div>
-            <a href="/" id="nav-dashboard-link" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-grid" aria-hidden="true"></i>
-                    <span>Dashboard</span>
-                </span>
-            </a>
-            <a href="/kadin/disposisi" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-inbox" aria-hidden="true"></i>
-                    <span>Surat Masuk &amp; Disposisi</span>
-                </span>
-                <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
-            </a>
-            <a href="/registrasi-surat" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-send" aria-hidden="true"></i>
-                    <span>Registrasi Surat &amp; SPPD</span>
-                </span>
-            </a>
+            @if(auth()->user()->role === 'admin')
+                <div class="sidebar-section-label">MENU UTAMA &amp; AGENDA</div>
+                <a href="/" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-grid" aria-hidden="true"></i>
+                        <span>Dashboard Admin</span>
+                    </span>
+                </a>
+                <a href="/registrasi-surat" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-send" aria-hidden="true"></i>
+                        <span>Registrasi &amp; Agenda Naskah</span>
+                    </span>
+                </a>
 
-            <div class="sidebar-section-label">VERIFIKASI &amp; OTORISASI TTE</div>
-            <a href="/verifikasi-hierarki" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
-                    <span>Verifikasi Hierarki</span>
-                </span>
-                <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">4</span>
-            </a>
-            <a href="/kadin/validasi" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
-                    <span>Validasi &amp; TTE Kadin</span>
-                </span>
-                <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
-            </a>
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
 
-            <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-            <a href="/buku-besar" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                    <span>Buku Besar / Laporan</span>
-                </span>
-            </a>
-            <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-patch-check" aria-hidden="true"></i>
-                    <span>Portal Verifikasi Publik</span>
-                </span>
-            </a>
+                <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
+                <a href="/admin/users" class="nav-link-sidebar active">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-people-fill" aria-hidden="true"></i>
+                        <span>Manajemen Akun Pegawai</span>
+                    </span>
+                </a>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @elseif(in_array(auth()->user()->role, ['kasubbag', 'sekdin']))
+                <div class="sidebar-section-label">VERIFIKASI BERJENJANG</div>
+                <a href="/verifikasi-hierarki" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                        <span>Verifikasi Hierarki Naskah</span>
+                    </span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
+                </a>
 
-            <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
-            <a href="/admin/users" class="nav-link-sidebar active">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-people-fill" aria-hidden="true"></i>
-                    <span>Manajemen Akun Pegawai</span>
-                </span>
-            </a>
-            <a href="#modalPinTte" data-bs-toggle="modal" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
-                    <span>Pengaturan PIN &amp; Profil</span>
-                </span>
-            </a>
-            <a href="/login" onclick="localStorage.removeItem('esurat_locked_role')" class="nav-link-sidebar text-danger">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                    <span>Logout</span>
-                </span>
-            </a>
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
+
+                <div class="sidebar-section-label">SESI &amp; KEAMANAN</div>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @elseif(auth()->user()->role === 'kadin')
+                <div class="sidebar-section-label">MENU UTAMA PIMPINAN</div>
+                <a href="/kadin" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-grid" aria-hidden="true"></i>
+                        <span>Dashboard Eksekutif</span>
+                    </span>
+                </a>
+                <a href="/kadin/validasi" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+                        <span>Validasi &amp; TTE QR</span>
+                    </span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                </a>
+                <a href="/kadin/disposisi" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-inbox" aria-hidden="true"></i>
+                        <span>Disposisi Surat Masuk</span>
+                    </span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
+                </a>
+
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
+
+                <div class="sidebar-section-label">OTORISASI &amp; KEAMANAN</div>
+                <a href="#modalPinTte" data-bs-toggle="modal" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                        <span>Pengaturan PIN / Passphrase TTE</span>
+                    </span>
+                </a>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @endif
         </div>
 
         <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
             <div class="d-flex align-items-center gap-2 mb-2">
-                <div id="sidebar-avatar" class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
-                    AD
+                <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
+                    {{ $userInitials }}
                 </div>
                 <div class="lh-sm overflow-hidden">
-                    <div id="sidebar-name" class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">AD - Admin Disdukcapil</div>
-                    <div id="sidebar-subtitle" class="text-secondary text-truncate" style="font-size: 0.69rem;">Subbag Umum &amp; Kepegawaian</div>
+                    <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">{{ $userName }}</div>
+                    <div class="text-secondary text-truncate" style="font-size: 0.69rem;">{{ $userJabatan }}</div>
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded-2" style="background-color: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
-                <span id="sidebar-status" class="text-success fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.68rem;">
-                    <i class="bi bi-lock-fill" aria-hidden="true"></i> Role Terkunci: Staf Admin
+                <span class="text-success fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.68rem;">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i> {{ $roleStatusLabel }}
                 </span>
                 <span class="badge bg-success text-white" style="font-size: 0.62rem;">RBAC</span>
             </div>
@@ -244,21 +325,6 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="dropdown">
-                    <button class="btn btn-sm border border-primary border-opacity-25 rounded-pill px-3 py-1 d-flex align-items-center gap-2" style="background-color: #EFF6FF; font-size: 0.74rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                        <span class="text-primary fw-semibold" id="role-switcher-label">Simulasi Aktor: Staf Admin</span>
-                        <i class="bi bi-chevron-down text-primary" style="font-size: 0.65rem;" aria-hidden="true"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 small" style="min-width: 250px;">
-                        <li class="px-3 py-1 text-secondary fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Kunci Identitas Aktor (Testing)</li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/admin?redirect=/admin/users" onclick="lockUserRole('admin')"><i class="bi bi-person-gear text-primary me-2"></i><strong>Staf Admin</strong> (Subbag Umpeg)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/kasubbag?redirect=/admin/users" onclick="lockUserRole('kasubbag')"><i class="bi bi-clipboard2-check text-warning me-2"></i><strong>Kasubbag Umpeg</strong> (Verifikator I)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/sekdin?redirect=/admin/users" onclick="lockUserRole('sekdin')"><i class="bi bi-pen text-info me-2"></i><strong>Sekretaris Dinas</strong> (Verifikator II)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/kadin?redirect=/admin/users" onclick="lockUserRole('kadin')"><i class="bi bi-qr-code-scan text-success me-2"></i><strong>Kepala Dinas</strong> (Otorisator TTE)</a></li>
-                    </ul>
-                </div>
-
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
                     <span>Selasa, 17 November 2026</span>
@@ -266,25 +332,116 @@
 
                 <div class="dropdown">
                     <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span id="topbar-avatar" class="rounded-circle bg-primary text-white fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">AD</span>
-                        <span id="topbar-name" class="text-dark fw-medium" style="font-size: 0.76rem;">AD - Admin Disdukcapil</span>
+                        <span class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">{{ $userInitials }}</span>
+                        <span class="text-dark fw-medium" style="font-size: 0.76rem;">{{ $userName }}</span>
                         <i class="bi bi-chevron-down text-secondary" style="font-size: 0.65rem;" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small" style="min-width: 230px;">
                         <li class="px-3 py-2 border-bottom">
-                            <div id="dropdown-name" class="fw-bold text-dark">Rizky Pratama, S.IP</div>
-                            <div id="dropdown-subtitle" class="text-secondary" style="font-size: 0.7rem;">Staf Admin Subbag Umpeg</div>
+                            <div class="fw-bold text-dark">{{ $userName }}</div>
+                            <div class="text-secondary" style="font-size: 0.7rem;">{{ $userJabatan }}</div>
+                            <div class="doc-number-mono text-primary mt-1" style="font-size: 0.68rem;">NIP: {{ $userNip }}</div>
                         </li>
-                        <li><a class="dropdown-item" href="#modalPinTte" data-bs-toggle="modal"><i class="bi bi-person-badge me-2"></i>Profil &amp; Keamanan Akun</a></li>
+                        <li><a class="dropdown-item" href="/buku-besar"><i class="bi bi-journal-bookmark me-2"></i>Buku Besar Persuratan</a></li>
                         <li><a class="dropdown-item" href="/verifikasi-dokumen"><i class="bi bi-qr-code-scan me-2"></i>Portal Verifikasi Publik</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="/login" onclick="localStorage.removeItem('esurat_locked_role')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
         </header>
 
         <main class="p-4 flex-grow-1">
+            @if (session('status'))
+                <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #DCFCE7; color: #15803D; font-size: 0.8rem;">
+                    <i class="bi bi-check-circle-fill flex-shrink-0" aria-hidden="true"></i>
+                    <div class="flex-grow-1">{{ session('status') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <i class="bi bi-shield-exclamation flex-shrink-0" aria-hidden="true"></i>
+                    <div class="flex-grow-1">{{ session('error') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="bi bi-exclamation-octagon-fill mt-1 flex-shrink-0" aria-hidden="true"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-1">Validasi Data Pegawai Gagal:</div>
+                            <ul class="mb-0 ps-3">
+                                @foreach ($errors->all() as $err)
+                                    <li>{{ $err }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                    </div>
+                </div>
+            @endif
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Akun Terdaftar</div>
+                            <div class="fs-4 fw-bold text-dark lh-1 mb-1">{{ $stats['total'] ?? $users->count() }}</div>
+                            <div class="text-primary fw-medium" style="font-size: 0.72rem;">
+                                <i class="bi bi-people-fill me-1" aria-hidden="true"></i>Database Single Gate RBAC
+                            </div>
+                        </div>
+                        <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
+                            <i class="bi bi-people-fill" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Akun Berstatus Aktif</div>
+                            <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $stats['aktif'] ?? $users->where('is_active', true)->count() }}</div>
+                            <div class="text-success fw-medium" style="font-size: 0.72rem;">
+                                <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Dapat Mengakses Sistem
+                            </div>
+                        </div>
+                        <div class="mini-stat-icon" style="background-color: #DCFCE7; color: #16A34A;">
+                            <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Pejabat Verifikator &amp; TTE</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $users->whereIn('role', ['kasubbag', 'sekdin', 'kadin'])->count() }}</div>
+                            <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
+                                <i class="bi bi-diagram-3-fill me-1" aria-hidden="true"></i>Kasubbag, Sekdin &amp; Kadin
+                            </div>
+                        </div>
+                        <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
+                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Akun Dinonaktifkan</div>
+                            <div class="fs-4 fw-bold text-danger lh-1 mb-1">{{ $stats['nonaktif'] ?? $users->where('is_active', false)->count() }}</div>
+                            <div class="text-secondary fw-medium" style="font-size: 0.72rem;">
+                                <i class="bi bi-person-slash me-1" aria-hidden="true"></i>Akses Login Diblokir
+                            </div>
+                        </div>
+                        <div class="mini-stat-icon" style="background-color: #FEE2E2; color: #DC2626;">
+                            <i class="bi bi-person-fill-lock" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4">
                 <div class="col-12 col-lg-4">
                     <div class="surface-card h-100 d-flex flex-column">
@@ -301,14 +458,15 @@
                         </div>
 
                         <div class="p-4 flex-grow-1">
-                            <form onsubmit="openUserActionModal('Registrasi Akun Baru Berhasil', 'Akun pegawai ' + document.getElementById('namaPegawai').value + ' (' + document.getElementById('nipPegawai').value + ') telah diaktifkan pada Single Gate RBAC.'); return false;">
+                            <form action="{{ route('admin.users.store') }}" method="POST">
+                                @csrf
                                 <div class="mb-3">
                                     <label for="nipPegawai" class="form-label fw-semibold text-dark small mb-1">
                                         NIP Pegawai (18 Digit) <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-vcard" aria-hidden="true"></i></span>
-                                        <input type="text" id="nipPegawai" class="form-control doc-number-mono" placeholder="Contoh: 198807152014021003" value="198807152014021003" required>
+                                        <input type="text" name="nip" id="nipPegawai" maxlength="18" class="form-control doc-number-mono" placeholder="Contoh: 198807152014021003" value="{{ old('nip') }}" required>
                                     </div>
                                 </div>
 
@@ -318,27 +476,43 @@
                                     </label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-person" aria-hidden="true"></i></span>
-                                        <input type="text" id="namaPegawai" class="form-control" placeholder="Masukkan nama lengkap beserta gelar..." value="M. Farhan Pratama, S.Kom" required>
+                                        <input type="text" name="nama_lengkap" id="namaPegawai" class="form-control" placeholder="Masukkan nama lengkap beserta gelar..." value="{{ old('nama_lengkap') }}" required>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="jabatanPegawai" class="form-label fw-semibold text-dark small mb-1">
-                                        Jabatan Struktural/Fungsional <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-briefcase" aria-hidden="true"></i></span>
-                                        <input type="text" id="jabatanPegawai" class="form-control" placeholder="Masukkan jabatan resmi di Disdukcapil..." value="Pranata Komputer Ahli Pertama" required>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 col-sm-7">
+                                        <label for="jabatanPegawai" class="form-label fw-semibold text-dark small mb-1">
+                                            Jabatan Struktural/Fungsional <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-briefcase" aria-hidden="true"></i></span>
+                                            <input type="text" name="jabatan" id="jabatanPegawai" class="form-control" placeholder="Jabatan resmi..." value="{{ old('jabatan') }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-5">
+                                        <label for="pangkatPegawai" class="form-label fw-semibold text-dark small mb-1">
+                                            Pangkat / Golongan
+                                        </label>
+                                        <input type="text" name="pangkat_golongan" id="pangkatPegawai" class="form-control form-control-sm" placeholder="Penata (III/c)" value="{{ old('pangkat_golongan') }}">
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="kontakPegawai" class="form-label fw-semibold text-dark small mb-1">
-                                        Email Resmi / No. HP <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-envelope-at" aria-hidden="true"></i></span>
-                                        <input type="text" id="kontakPegawai" class="form-control" placeholder="email@kaboki.go.id / 0812xxxx" value="farhan.pratama@kaboki.go.id" required>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 col-sm-7">
+                                        <label for="emailPegawai" class="form-label fw-semibold text-dark small mb-1">
+                                            Email Resmi <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-envelope-at" aria-hidden="true"></i></span>
+                                            <input type="email" name="email" id="emailPegawai" class="form-control" placeholder="nama@kaboki.go.id" value="{{ old('email') }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-5">
+                                        <label for="noHpPegawai" class="form-label fw-semibold text-dark small mb-1">
+                                            No. HP / WhatsApp
+                                        </label>
+                                        <input type="text" name="no_hp" id="noHpPegawai" class="form-control form-control-sm doc-number-mono" placeholder="081271xxxxxx" value="{{ old('no_hp') }}">
                                     </div>
                                 </div>
 
@@ -346,11 +520,11 @@
                                     <label for="roleSistem" class="form-label fw-semibold text-dark small mb-1">
                                         Penetapan Hak Akses (Role Sistem) <span class="text-danger">*</span>
                                     </label>
-                                    <select id="roleSistem" class="form-select form-select-sm fw-medium">
-                                        <option value="admin" selected>Staf Admin (Operator Agenda &amp; Konsep Surat)</option>
-                                        <option value="kasubbag">Kasubbag Umpeg (Verifikator Hierarki Tahap 1)</option>
-                                        <option value="sekdin">Sekretaris Dinas / Sekdin (Verifikator Hierarki Tahap 2)</option>
-                                        <option value="kadin">Kepala Dinas / Kadin (Otorisator TTE &amp; Disposisi)</option>
+                                    <select name="role" id="roleSistem" class="form-select form-select-sm fw-medium">
+                                        <option value="admin" {{ old('role', 'admin') === 'admin' ? 'selected' : '' }}>Staf Admin (Operator Agenda &amp; Konsep Surat)</option>
+                                        <option value="kasubbag" {{ old('role') === 'kasubbag' ? 'selected' : '' }}>Kasubbag Umpeg (Verifikator Hierarki Tahap 1)</option>
+                                        <option value="sekdin" {{ old('role') === 'sekdin' ? 'selected' : '' }}>Sekretaris Dinas / Sekdin (Verifikator Hierarki Tahap 2)</option>
+                                        <option value="kadin" {{ old('role') === 'kadin' ? 'selected' : '' }}>Kepala Dinas / Kadin (Otorisator TTE &amp; Disposisi)</option>
                                     </select>
                                     <div class="form-text" style="font-size: 0.69rem;">
                                         Menentukan hak akses dashboard pada Single Gate Login.
@@ -363,7 +537,7 @@
                                     </label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-key-fill" aria-hidden="true"></i></span>
-                                        <input type="text" id="passwordDefault" class="form-control doc-number-mono text-primary" value="DukcapilOKI#2026">
+                                        <input type="text" name="password" id="passwordDefault" class="form-control doc-number-mono text-primary" value="{{ old('password', 'password123') }}" required>
                                     </div>
                                 </div>
 
@@ -371,7 +545,7 @@
                                     <div class="d-flex align-items-start gap-2">
                                         <i class="bi bi-shield-lock-fill text-primary mt-1" aria-hidden="true"></i>
                                         <div class="text-secondary" style="font-size: 0.73rem; line-height: 1.45;">
-                                            <strong class="text-dark">Kebijakan Keamanan Kredensial:</strong> Pegawai wajib mengganti password sementara saat login pertama kali. Passphrase / PIN TTE diatur secara mandiri oleh Kepala Dinas.
+                                            <strong class="text-dark">Kebijakan Keamanan Kredensial:</strong> Pegawai dapat langsung login menggunakan NIP, Email Resmi, atau No. HP beserta password sementara di atas.
                                         </div>
                                     </div>
                                 </div>
@@ -391,7 +565,7 @@
                     <div class="surface-card h-100 d-flex flex-column overflow-hidden">
                         <div class="p-3 px-4 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                             <div>
-                                <h6 class="fw-bold text-dark mb-1">Daftar Akun Pegawai Terdaftar</h6>
+                                <h6 class="fw-bold text-dark mb-1">Daftar Akun Pegawai Terdaftar ({{ $users->count() }} Aparatur)</h6>
                                 <div class="text-secondary" style="font-size: 0.76rem;">Kelola hak akses RBAC, status otorisasi TTE, dan pemulihan kata sandi aparatur Disdukcapil OKI.</div>
                             </div>
 
@@ -404,7 +578,7 @@
                                 </div>
 
                                 <select id="userRoleFilter" onchange="filterUserTable()" class="form-select form-select-sm fw-medium" style="width: 170px;">
-                                    <option value="">Semua Role (4)</option>
+                                    <option value="">Semua Role ({{ $users->count() }})</option>
                                     <option value="kadin">Kepala Dinas (Kadin)</option>
                                     <option value="sekdin">Sekretaris Dinas</option>
                                     <option value="kasubbag">Kasubbag Umpeg</option>
@@ -418,190 +592,98 @@
                                 <thead>
                                     <tr>
                                         <th class="ps-4" style="width: 52px;">NO</th>
-                                        <th>NIP &amp; NAMA PEGAWAI</th>
-                                        <th>JABATAN</th>
+                                        <th>NIP, NAMA &amp; KONTAK</th>
+                                        <th>JABATAN &amp; PANGKAT</th>
                                         <th>ROLE AKSES</th>
                                         <th>STATUS TTE / AKUN</th>
                                         <th class="pe-4 text-end">AKSI</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr data-role="kadin">
-                                        <td class="ps-4 fw-bold text-dark font-monospace">1</td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Drs. H. Hendra Suryadi, M.Si</div>
-                                            <div class="doc-number-mono text-primary mt-1">NIP: 197108141998031004</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark">Kepala Dinas Dukcapil</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Pembina Utama Muda (IV/c)</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #EDE9FE; color: #6D28D9; font-size: 0.72rem;">
-                                                <i class="bi bi-award-fill me-1" aria-hidden="true"></i>Kepala Dinas (Kadin)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                                <i class="bi bi-qr-code me-1" aria-hidden="true"></i>PIN TTE Terkonfigurasi
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <button type="button" onclick="openUserActionModal('Edit Role Pegawai', 'Ubah hak akses RBAC untuk Drs. H. Hendra Suryadi, M.Si')" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Role
-                                                </button>
-                                                <button type="button" onclick="openUserActionModal('Reset Kata Sandi', 'Kirimkan password sementara baru untuk Drs. H. Hendra Suryadi, M.Si')" class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-key" aria-hidden="true"></i> Reset
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr data-role="sekdin">
-                                        <td class="ps-4 fw-bold text-dark font-monospace">2</td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Ir. H. Bambang Irawan, M.M</div>
-                                            <div class="doc-number-mono text-primary mt-1">NIP: 197405212000031002</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark">Sekretaris Dinas (Sekdin)</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Pembina Tk. I (IV/b)</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                                <i class="bi bi-shield-check me-1" aria-hidden="true"></i>Sekdin (Verifikator II)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                                <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Aktif (Paraf Hierarki)
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <button type="button" onclick="openUserActionModal('Edit Role Pegawai', 'Ubah hak akses RBAC untuk Ir. H. Bambang Irawan, M.M')" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Role
-                                                </button>
-                                                <button type="button" onclick="openUserActionModal('Reset Kata Sandi', 'Kirimkan password sementara baru untuk Ir. H. Bambang Irawan, M.M')" class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-key" aria-hidden="true"></i> Reset
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr data-role="kasubbag">
-                                        <td class="ps-4 fw-bold text-dark font-monospace">3</td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Hj. Siti Rahmawati, S.Sos., M.Si</div>
-                                            <div class="doc-number-mono text-primary mt-1">NIP: 197911032005012006</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark">Kasubbag Umum &amp; Kepegawaian</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Penata Tk. I (III/d)</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
-                                                <i class="bi bi-file-earmark-check me-1" aria-hidden="true"></i>Kasubbag (Verifikator I)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                                <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Aktif (Verifikator)
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <button type="button" onclick="openUserActionModal('Edit Role Pegawai', 'Ubah hak akses RBAC untuk Hj. Siti Rahmawati, S.Sos., M.Si')" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Role
-                                                </button>
-                                                <button type="button" onclick="openUserActionModal('Reset Kata Sandi', 'Kirimkan password sementara baru untuk Hj. Siti Rahmawati, S.Sos., M.Si')" class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-key" aria-hidden="true"></i> Reset
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr data-role="admin">
-                                        <td class="ps-4 fw-bold text-dark font-monospace">4</td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Rizky Pratama, S.IP</div>
-                                            <div class="doc-number-mono text-primary mt-1">NIP: 198504122010011008</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark">Analis Tata Usaha / Ajudan</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Penata Muda Tk. I (III/b)</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #E0F2FE; color: #0369A1; font-size: 0.72rem;">
-                                                <i class="bi bi-person-gear me-1" aria-hidden="true"></i>Staf Admin
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                                <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Aktif
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <button type="button" onclick="openUserActionModal('Edit Role Pegawai', 'Ubah hak akses RBAC untuk Rizky Pratama, S.IP')" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Role
-                                                </button>
-                                                <button type="button" onclick="openUserActionModal('Reset Kata Sandi', 'Kirimkan password sementara baru untuk Rizky Pratama, S.IP')" class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-key" aria-hidden="true"></i> Reset
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr data-role="admin">
-                                        <td class="ps-4 fw-bold text-dark font-monospace">5</td>
-                                        <td>
-                                            <div class="fw-semibold text-dark">Dedi Kurniawan, A.Md.Kom</div>
-                                            <div class="doc-number-mono text-primary mt-1">NIP: 199209182019031005</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-medium text-dark">Pengelola Surat &amp; Arsip Digital</div>
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Pengatur Tk. I (II/d)</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #E0F2FE; color: #0369A1; font-size: 0.72rem;">
-                                                <i class="bi bi-person-gear me-1" aria-hidden="true"></i>Staf Admin
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                                <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Aktif
-                                            </span>
-                                        </td>
-                                        <td class="pe-4 text-end">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <button type="button" onclick="openUserActionModal('Edit Role Pegawai', 'Ubah hak akses RBAC untuk Dedi Kurniawan, A.Md.Kom')" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Role
-                                                </button>
-                                                <button type="button" onclick="openUserActionModal('Reset Kata Sandi', 'Kirimkan password sementara baru untuk Dedi Kurniawan, A.Md.Kom')" class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-key" aria-hidden="true"></i> Reset
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    @foreach ($users as $idx => $pegawai)
+                                        <tr data-role="{{ $pegawai->role }}" class="{{ ! $pegawai->is_active ? 'table-light text-muted' : '' }}">
+                                            <td class="ps-4 fw-bold text-dark font-monospace">{{ $idx + 1 }}</td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ $pegawai->nama_lengkap }}</div>
+                                                <div class="doc-number-mono text-primary mt-1">NIP: {{ $pegawai->nip }}</div>
+                                                <div class="text-secondary" style="font-size: 0.71rem;">
+                                                    {{ $pegawai->email }}{{ $pegawai->no_hp ? ' • ' . $pegawai->no_hp : '' }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-medium text-dark">{{ $pegawai->jabatan }}</div>
+                                                <div class="text-secondary" style="font-size: 0.72rem;">{{ $pegawai->pangkat_golongan ?: 'ASN Disdukcapil OKI' }}</div>
+                                            </td>
+                                            <td>
+                                                @if ($pegawai->role === 'kadin')
+                                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #EDE9FE; color: #6D28D9; font-size: 0.72rem;">
+                                                        <i class="bi bi-award-fill me-1" aria-hidden="true"></i>Kepala Dinas (Kadin)
+                                                    </span>
+                                                @elseif ($pegawai->role === 'sekdin')
+                                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
+                                                        <i class="bi bi-shield-check me-1" aria-hidden="true"></i>Sekdin (Verifikator II)
+                                                    </span>
+                                                @elseif ($pegawai->role === 'kasubbag')
+                                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
+                                                        <i class="bi bi-file-earmark-check me-1" aria-hidden="true"></i>Kasubbag (Verifikator I)
+                                                    </span>
+                                                @else
+                                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #E0F2FE; color: #0369A1; font-size: 0.72rem;">
+                                                        <i class="bi bi-person-gear me-1" aria-hidden="true"></i>Staf Admin
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if (! $pegawai->is_active)
+                                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.72rem;">
+                                                        <i class="bi bi-x-circle-fill me-1" aria-hidden="true"></i>Nonaktif
+                                                    </span>
+                                                @elseif ($pegawai->role === 'kadin' && ! empty($pegawai->pin_tte))
+                                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
+                                                        <i class="bi bi-qr-code me-1" aria-hidden="true"></i>PIN TTE Terkonfigurasi
+                                                    </span>
+                                                @else
+                                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
+                                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Aktif
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="pe-4 text-end">
+                                                <div class="d-inline-flex align-items-center gap-1">
+                                                    <button type="button"
+                                                        onclick="openEditUserModal({{ $pegawai->id }}, @js($pegawai->nip), @js($pegawai->nama_lengkap), @js($pegawai->jabatan), @js($pegawai->pangkat_golongan ?? ''), @js($pegawai->email), @js($pegawai->no_hp ?? ''), @js($pegawai->role))"
+                                                        class="btn btn-sm btn-outline-primary fw-medium px-2 py-1" style="font-size: 0.72rem;" title="Edit Profil & Role">
+                                                        <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit
+                                                    </button>
+                                                    <button type="button"
+                                                        onclick="openResetPasswordModal({{ $pegawai->id }}, @js($pegawai->nama_lengkap), @js($pegawai->nip))"
+                                                        class="btn btn-sm btn-outline-warning text-dark fw-medium px-2 py-1" style="font-size: 0.72rem;" title="Reset Kata Sandi">
+                                                        <i class="bi bi-key" aria-hidden="true"></i> Reset
+                                                    </button>
+                                                    @if ($pegawai->id !== auth()->id())
+                                                        <form action="{{ route('admin.users.toggle-active', $pegawai->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" class="btn btn-sm {{ $pegawai->is_active ? 'btn-outline-danger' : 'btn-outline-success' }} fw-medium px-2 py-1" style="font-size: 0.72rem;" title="{{ $pegawai->is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun' }}">
+                                                                <i class="bi {{ $pegawai->is_active ? 'bi-person-slash' : 'bi-person-check' }}" aria-hidden="true"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
 
                         <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
                             <span class="text-secondary" style="font-size: 0.76rem;">
-                                Menampilkan <strong>1 &ndash; 5</strong> dari <strong>18</strong> akun aparatur aktif di lingkungan Disdukcapil OKI
+                                Menampilkan total <strong>{{ $users->count() }}</strong> akun aparatur di database MySQL Disdukcapil OKI
                             </span>
-                            <nav aria-label="Navigasi halaman pegawai">
-                                <ul class="pagination pagination-sm mb-0">
-                                    <li class="page-item disabled"><button type="button" class="page-link">Sebelumnya</button></li>
-                                    <li class="page-item active"><button type="button" class="page-link">1</button></li>
-                                    <li class="page-item"><button type="button" class="page-link" onclick="filterUserTable()">2</button></li>
-                                    <li class="page-item"><button type="button" class="page-link" onclick="filterUserTable()">3</button></li>
-                                    <li class="page-item"><button type="button" class="page-link" onclick="filterUserTable()">Selanjutnya</button></li>
-                                </ul>
-                            </nav>
+                            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold" style="font-size: 0.72rem;">
+                                <i class="bi bi-database-fill-check me-1" aria-hidden="true"></i>Sinkron Real-Time db_disdukcapil_oki
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -615,165 +697,105 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalUserAction" tabindex="-1" aria-hidden="true">
+<!-- Modal Edit Profil & Role Pegawai -->
+<div class="modal fade" id="modalEditUser" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-primary d-flex align-items-center gap-2" id="modalUserActionTitle">
-                    <i class="bi bi-check2-circle" aria-hidden="true"></i>
-                    <span>Manajemen Akun Pegawai</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4 small">
-                <p class="text-dark fw-medium mb-0" id="modalUserActionDesc"></p>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Selesai</button>
-            </div>
+            <form id="formEditUser" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                        <span>Edit Data &amp; Hak Akses (Role) Pegawai</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body p-4 small">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark mb-1">NIP Pegawai (18 Digit) <span class="text-danger">*</span></label>
+                        <input type="text" name="nip" id="editUserNip" maxlength="18" class="form-control form-control-sm doc-number-mono" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark mb-1">Nama Lengkap &amp; Gelar <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_lengkap" id="editUserNama" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-7">
+                            <label class="form-label fw-semibold text-dark mb-1">Jabatan <span class="text-danger">*</span></label>
+                            <input type="text" name="jabatan" id="editUserJabatan" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <label class="form-label fw-semibold text-dark mb-1">Pangkat / Golongan</label>
+                            <input type="text" name="pangkat_golongan" id="editUserPangkat" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-7">
+                            <label class="form-label fw-semibold text-dark mb-1">Email Resmi <span class="text-danger">*</span></label>
+                            <input type="email" name="email" id="editUserEmail" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <label class="form-label fw-semibold text-dark mb-1">No. HP</label>
+                            <input type="text" name="no_hp" id="editUserNoHp" class="form-control form-control-sm doc-number-mono">
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold text-dark mb-1">Hak Akses (Role Sistem RBAC) <span class="text-danger">*</span></label>
+                        <select name="role" id="editUserRole" class="form-select form-select-sm fw-medium">
+                            <option value="admin">Staf Admin (Operator Agenda &amp; Konsep Surat)</option>
+                            <option value="kasubbag">Kasubbag Umpeg (Verifikator Hierarki Tahap 1)</option>
+                            <option value="sekdin">Sekretaris Dinas / Sekdin (Verifikator Hierarki Tahap 2)</option>
+                            <option value="kadin">Kepala Dinas / Kadin (Otorisator TTE &amp; Disposisi)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-primary fw-semibold">Simpan Perubahan</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalPinTte" tabindex="-1" aria-hidden="true">
+<!-- Modal Reset Password Pegawai -->
+<div class="modal fade" id="modalResetPassword" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                    <span>Pengaturan Profil &amp; Keamanan Akun</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="p-3 rounded-2 mb-3 border" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.78rem;">
-                    <strong class="text-primary d-block mb-1" id="modal-role-title">Aktor Aktif: Staf Admin Subbag Umpeg</strong>
-                    <span class="text-secondary">Kredensial Single Gate RBAC terhubung dengan Buku Besar Disdukcapil OKI.</span>
+            <form id="formResetPassword" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-key-fill text-warning" aria-hidden="true"></i>
+                        <span>Reset Kata Sandi Akun Pegawai</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small text-dark mb-1">Kata Sandi / Passphrase Saat Ini</label>
-                    <input type="password" class="form-control form-control-sm" value="••••••••••••">
+                <div class="modal-body p-4 small">
+                    <p class="text-secondary mb-2">Tetapkan kata sandi baru untuk pegawai:</p>
+                    <div class="p-2 px-3 rounded-2 bg-light border mb-3">
+                        <div class="fw-bold text-dark" id="resetPassNama">-</div>
+                        <div class="doc-number-mono text-primary" id="resetPassNip">-</div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold text-dark mb-1">Password Baru <span class="text-danger">*</span></label>
+                        <input type="text" name="new_password" class="form-control form-control-sm doc-number-mono text-primary" value="password123" required minlength="6">
+                    </div>
                 </div>
-                <div class="mb-0">
-                    <label class="form-label fw-semibold small text-dark mb-1">Kata Sandi / PIN Baru</label>
-                    <input type="password" class="form-control form-control-sm" placeholder="Minimal 8 karakter...">
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-warning text-dark fw-semibold">Reset Kata Sandi</button>
                 </div>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const ROLE_PROFILES = {
-        admin: {
-            initials: 'AD',
-            badgeClass: 'bg-primary text-white',
-            sidebarName: 'AD - Admin Disdukcapil',
-            sidebarSub: 'Subbag Umum & Kepegawaian',
-            statusText: 'Role Terkunci: Staf Admin',
-            switcherText: 'Simulasi Aktor: Staf Admin',
-            fullName: 'Rizky Pratama, S.IP',
-            homeUrl: '/?role=admin'
-        },
-        kasubbag: {
-            initials: 'KS',
-            badgeClass: 'bg-warning text-dark',
-            sidebarName: 'KS - Hj. Siti Rahmawati',
-            sidebarSub: 'Kasubbag Umpeg • Verifikator I',
-            statusText: 'Role Terkunci: Kasubbag (Verif I)',
-            switcherText: 'Simulasi Aktor: Kasubbag Umpeg',
-            fullName: 'Hj. Siti Rahmawati, S.Sos., M.Si',
-            homeUrl: '/verifikasi-hierarki?role=kasubbag'
-        },
-        sekdin: {
-            initials: 'SD',
-            badgeClass: 'bg-info text-dark',
-            sidebarName: 'SD - Ir. H. Bambang Irawan',
-            sidebarSub: 'Sekretaris Dinas • Verifikator II',
-            statusText: 'Role Terkunci: Sekdin (Verif II)',
-            switcherText: 'Simulasi Aktor: Sekretaris Dinas',
-            fullName: 'Ir. H. Bambang Irawan, M.M',
-            homeUrl: '/verifikasi-hierarki?role=sekdin'
-        },
-        kadin: {
-            initials: 'KD',
-            badgeClass: 'bg-primary text-white',
-            sidebarName: 'KD - Drs. H. Hendra Suryadi',
-            sidebarSub: 'Kepala Dinas Dukcapil OKI',
-            statusText: 'Role Terkunci: Kepala Dinas',
-            switcherText: 'Simulasi Aktor: Kepala Dinas',
-            fullName: 'Drs. H. Hendra Suryadi, M.Si',
-            homeUrl: '/kadin?role=kadin'
-        }
-    };
-
-    function lockUserRole(role) {
-        if (ROLE_PROFILES[role]) {
-            localStorage.setItem('esurat_locked_role', role);
-        }
-    }
-
-    function applyLockedRole() {
-        const params = new URLSearchParams(window.location.search);
-        const urlRole = params.get('role');
-        if (urlRole && ROLE_PROFILES[urlRole]) {
-            localStorage.setItem('esurat_locked_role', urlRole);
-        }
-
-        const activeRole = localStorage.getItem('esurat_locked_role') || document.body.getAttribute('data-default-role') || 'admin';
-        localStorage.setItem('esurat_locked_role', activeRole);
-        const profile = ROLE_PROFILES[activeRole] || ROLE_PROFILES.admin;
-
-        const sidebarAvatar = document.getElementById('sidebar-avatar');
-        const topbarAvatar = document.getElementById('topbar-avatar');
-        if (sidebarAvatar) {
-            sidebarAvatar.textContent = profile.initials;
-            sidebarAvatar.className = 'rounded-circle fw-bold d-flex align-items-center justify-content-center flex-shrink-0 ' + profile.badgeClass;
-        }
-        if (topbarAvatar) {
-            topbarAvatar.textContent = profile.initials;
-            topbarAvatar.className = 'rounded-circle fw-bold d-inline-flex align-items-center justify-content-center ' + profile.badgeClass;
-        }
-
-        const elMap = {
-            'sidebar-name': profile.sidebarName,
-            'sidebar-subtitle': profile.sidebarSub,
-            'topbar-name': profile.sidebarName,
-            'dropdown-name': profile.fullName,
-            'dropdown-subtitle': profile.sidebarSub,
-            'role-switcher-label': profile.switcherText,
-            'modal-role-title': 'Aktor Aktif: ' + profile.fullName + ' (' + profile.sidebarSub + ')'
-        };
-        Object.keys(elMap).forEach(function(id) {
-            const el = document.getElementById(id);
-            if (el) el.textContent = elMap[id];
-        });
-
-        const statusEl = document.getElementById('sidebar-status');
-        if (statusEl) {
-            statusEl.innerHTML = '<i class="bi bi-lock-fill me-1" aria-hidden="true"></i>' + profile.statusText;
-        }
-
-        const dashLink = document.getElementById('nav-dashboard-link');
-        if (dashLink) {
-            dashLink.setAttribute('href', profile.homeUrl);
-        }
-
-        document.querySelectorAll('a[href^="/"]').forEach(function(link) {
-            const href = link.getAttribute('href');
-            if (!href || href.startsWith('/switch-role') || href.startsWith('/login') || href.includes('role=')) return;
-            const parts = href.split('#');
-            const base = parts[0];
-            const hash = parts[1] ? '#' + parts[1] : '';
-            const sep = base.includes('?') ? '&' : '?';
-            link.setAttribute('href', base + sep + 'role=' + activeRole + hash);
-        });
-    }
+    localStorage.removeItem('esurat_locked_role');
 
     function filterUserTable() {
         const q = (document.getElementById('userSearchInput').value || '').toLowerCase();
@@ -786,13 +808,24 @@
         });
     }
 
-    function openUserActionModal(title, desc) {
-        document.getElementById('modalUserActionTitle').textContent = title;
-        document.getElementById('modalUserActionDesc').textContent = desc;
-        new bootstrap.Modal(document.getElementById('modalUserAction')).show();
+    function openEditUserModal(id, nip, nama, jabatan, pangkat, email, noHp, role) {
+        document.getElementById('formEditUser').action = '/admin/users/' + id;
+        document.getElementById('editUserNip').value = nip;
+        document.getElementById('editUserNama').value = nama;
+        document.getElementById('editUserJabatan').value = jabatan;
+        document.getElementById('editUserPangkat').value = pangkat;
+        document.getElementById('editUserEmail').value = email;
+        document.getElementById('editUserNoHp').value = noHp;
+        document.getElementById('editUserRole').value = role;
+        new bootstrap.Modal(document.getElementById('modalEditUser')).show();
     }
 
-    document.addEventListener('DOMContentLoaded', applyLockedRole);
+    function openResetPasswordModal(id, nama, nip) {
+        document.getElementById('formResetPassword').action = '/admin/users/' + id + '/reset-password';
+        document.getElementById('resetPassNama').textContent = nama;
+        document.getElementById('resetPassNip').textContent = 'NIP: ' + nip;
+        new bootstrap.Modal(document.getElementById('modalResetPassword')).show();
+    }
 </script>
 </body>
 </html>

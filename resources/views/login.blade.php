@@ -213,7 +213,41 @@
                         </p>
                     </div>
 
-                    <form onsubmit="handleSingleGateLogin(); return false;">
+                    @if (session('status'))
+                        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0" role="alert" style="background-color: #DCFCE7; color: #15803D; font-size: 0.8rem;">
+                            <i class="bi bi-check-circle-fill flex-shrink-0" aria-hidden="true"></i>
+                            <div class="flex-grow-1">{{ session('status') }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                        </div>
+                    @endif
+
+                    @if (session('error'))
+                        <div class="alert alert-warning alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0" role="alert" style="background-color: #FEF3C7; color: #B45309; font-size: 0.8rem;">
+                            <i class="bi bi-exclamation-triangle-fill flex-shrink-0" aria-hidden="true"></i>
+                            <div class="flex-grow-1">{{ session('error') }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                        </div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-shield-exclamation mt-1 flex-shrink-0" aria-hidden="true"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold mb-1">Autentikasi Gagal:</div>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                            </div>
+                        </div>
+                    @endif
+
+                    <form id="singleGateLoginForm" action="{{ route('login.post') }}" method="POST">
+                        @csrf
                         <div class="mb-3">
                             <div class="d-flex align-items-center justify-content-between mb-1">
                                 <label for="kredensialPegawai" class="form-label fw-semibold text-dark small mb-0">
@@ -227,7 +261,7 @@
                                 <span class="input-group-text bg-light text-secondary">
                                     <i class="bi bi-person-vcard-fill" aria-hidden="true"></i>
                                 </span>
-                                <input type="text" id="kredensialPegawai" class="form-control doc-number-mono py-2" placeholder="Contoh: 198504122010011008 atau email dinas" value="198504122010011008" required>
+                                <input type="text" name="kredensial" id="kredensialPegawai" class="form-control doc-number-mono py-2 @error('kredensial') is-invalid @enderror" placeholder="Contoh: 198504122010011008 atau email dinas" value="{{ old('kredensial', '198504122010011008') }}" required>
                             </div>
                         </div>
 
@@ -239,7 +273,7 @@
                                 <span class="input-group-text bg-light text-secondary">
                                     <i class="bi bi-lock-fill" aria-hidden="true"></i>
                                 </span>
-                                <input type="password" id="kataSandiPegawai" class="form-control py-2" placeholder="Masukkan kata sandi akun Anda..." value="••••••••••••" required>
+                                <input type="password" name="password" id="kataSandiPegawai" class="form-control py-2 @error('password') is-invalid @enderror" placeholder="Masukkan kata sandi akun Anda..." value="password123" required>
                                 <button class="btn btn-outline-secondary bg-light text-secondary px-3" type="button" onclick="togglePasswordVisibility()" title="Tampilkan Sandi" aria-label="Tampilkan Sandi">
                                     <i id="eyeToggleIcon" class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
@@ -248,7 +282,7 @@
 
                         <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="ingatSesi" checked>
+                                <input class="form-check-input" type="checkbox" name="remember" id="ingatSesi" value="1" {{ old('remember', true) ? 'checked' : '' }}>
                                 <label class="form-check-label text-secondary" for="ingatSesi" style="font-size: 0.8rem;">
                                     Ingat Sesi Perangkat
                                 </label>
@@ -315,35 +349,39 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4 small">
-                <p class="text-secondary mb-3">Klik salah satu kredensial di bawah ini untuk mengisi NIP otomatis dan menguji deteksi role Single Gate:</p>
+                <p class="text-secondary mb-3">Klik salah satu akun pegawai resmi di bawah ini untuk mengisi NIP &amp; kata sandi otomatis (<code class="text-primary">password123</code>) lalu masuk secara nyata ke database:</p>
                 <div class="d-flex flex-column gap-2">
-                    <button type="button" onclick="fillDemoNip('198504122010011008')" data-bs-dismiss="modal" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
+                    <button type="button" onclick="fillDemoNip('198504122010011008', 'admin')" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-bold text-dark">Staf Admin Subbag Umpeg</div>
                             <div class="doc-number-mono text-primary">NIP: 198504122010011008 (Rizky Pratama, S.IP)</div>
+                            <div class="text-secondary" style="font-size: 0.72rem;">Email: rizky.pratama@kaboki.go.id &bull; Sandi: password123</div>
                         </div>
-                        <span class="badge bg-primary">Pilih NIP</span>
+                        <span class="badge bg-primary">Login Akun</span>
                     </button>
-                    <button type="button" onclick="fillDemoNip('197911032005012006')" data-bs-dismiss="modal" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
+                    <button type="button" onclick="fillDemoNip('197911032005012006', 'kasubbag')" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-bold text-dark">Kasubbag Umpeg (Verifikator Tahap 1)</div>
                             <div class="doc-number-mono text-primary">NIP: 197911032005012006 (Hj. Siti Rahmawati, S.Sos)</div>
+                            <div class="text-secondary" style="font-size: 0.72rem;">Email: siti.rahmawati@kaboki.go.id &bull; Sandi: password123</div>
                         </div>
-                        <span class="badge bg-warning text-dark">Pilih NIP</span>
+                        <span class="badge bg-warning text-dark">Login Akun</span>
                     </button>
-                    <button type="button" onclick="fillDemoNip('197405212000031002')" data-bs-dismiss="modal" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
+                    <button type="button" onclick="fillDemoNip('197405212000031002', 'sekdin')" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-bold text-dark">Sekretaris Dinas / Sekdin (Verifikator Tahap 2)</div>
                             <div class="doc-number-mono text-primary">NIP: 197405212000031002 (Ir. H. Bambang Irawan, M.M)</div>
+                            <div class="text-secondary" style="font-size: 0.72rem;">Email: bambang.irawan@kaboki.go.id &bull; Sandi: password123</div>
                         </div>
-                        <span class="badge bg-info text-dark">Pilih NIP</span>
+                        <span class="badge bg-info text-dark">Login Akun</span>
                     </button>
-                    <button type="button" onclick="fillDemoNip('197108141998031004')" data-bs-dismiss="modal" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
+                    <button type="button" onclick="fillDemoNip('197108141998031004', 'kadin')" class="btn btn-light border text-start p-2 px-3 d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-bold text-dark">Kepala Dinas Dukcapil OKI (Otorisator TTE)</div>
                             <div class="doc-number-mono text-primary">NIP: 197108141998031004 (Drs. H. Hendra Suryadi, M.Si)</div>
+                            <div class="text-secondary" style="font-size: 0.72rem;">Email: hendra.suryadi@kaboki.go.id &bull; Sandi: password123</div>
                         </div>
-                        <span class="badge bg-success">Pilih NIP</span>
+                        <span class="badge bg-success">Login Akun</span>
                     </button>
                 </div>
             </div>
@@ -373,6 +411,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    localStorage.removeItem('esurat_locked_role');
+
     function togglePasswordVisibility() {
         const input = document.getElementById('kataSandiPegawai');
         const icon = document.getElementById('eyeToggleIcon');
@@ -386,21 +426,15 @@
     }
 
     function fillDemoNip(nip) {
-        document.getElementById('kredensialPegawai').value = nip;
-    }
-
-    function handleSingleGateLogin() {
-        const val = (document.getElementById('kredensialPegawai').value || '').toLowerCase().trim();
-        let role = 'admin';
-        if (val.includes('19710814') || val.includes('kadin') || val.includes('hendra')) {
-            role = 'kadin';
-        } else if (val.includes('19740521') || val.includes('sekdin') || val.includes('bambang')) {
-            role = 'sekdin';
-        } else if (val.includes('19791103') || val.includes('kasubbag') || val.includes('siti')) {
-            role = 'kasubbag';
+        const kredInput = document.getElementById('kredensialPegawai');
+        const passInput = document.getElementById('kataSandiPegawai');
+        if (kredInput) kredInput.value = nip;
+        if (passInput) passInput.value = 'password123';
+        localStorage.removeItem('esurat_locked_role');
+        const form = document.getElementById('singleGateLoginForm');
+        if (form) {
+            form.submit();
         }
-        localStorage.setItem('esurat_locked_role', role);
-        window.location.href = '/switch-role/' + role;
     }
 </script>
 </body>

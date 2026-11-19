@@ -141,7 +141,34 @@
         }
     </style>
 </head>
-<body data-default-role="{{ $activeRole ?? 'admin' }}">
+<body>
+@php
+    $authUser = auth()->user();
+    $userRole = $authUser->role ?? 'admin';
+    $userName = $authUser->nama_lengkap ?? 'Pegawai Disdukcapil';
+    $userJabatan = $authUser->jabatan ?? 'Subbag Umum & Kepegawaian';
+    $userNip = $authUser->nip ?? '-';
+
+    $cleanName = preg_replace('/^(Drs\.|Ir\.|H\.|Hj\.|Dr\.|Prof\.)\s+/i', '', $userName);
+    $cleanName = preg_replace('/^(Drs\.|Ir\.|H\.|Hj\.|Dr\.|Prof\.)\s+/i', '', $cleanName);
+    $cleanName = explode(',', $cleanName)[0];
+    $words = array_values(array_filter(explode(' ', trim($cleanName))));
+    $userInitials = strtoupper(substr($words[0] ?? 'P', 0, 1) . substr($words[1] ?? ($words[0] ?? 'D'), 0, 1));
+
+    $avatarBadgeClass = match ($userRole) {
+        'kadin' => 'bg-success text-white',
+        'kasubbag' => 'bg-warning text-dark',
+        'sekdin' => 'bg-info text-dark',
+        default => 'bg-primary text-white',
+    };
+
+    $roleStatusLabel = match ($userRole) {
+        'kadin' => 'Otoritas: Kepala Dinas',
+        'kasubbag' => 'Otoritas: Kasubbag (Verif I)',
+        'sekdin' => 'Otoritas: Sekdin (Verif II)',
+        default => 'Otoritas: Staf Admin',
+    };
+@endphp
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
@@ -156,91 +183,145 @@
         </div>
 
         <div class="px-3 py-2 d-flex flex-column gap-1 flex-grow-1 overflow-y-auto">
-            <div class="sidebar-section-label">MENU UTAMA &amp; AGENDA</div>
-            <a href="/" id="nav-dashboard-link" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-grid" aria-hidden="true"></i>
-                    <span>Dashboard</span>
-                </span>
-            </a>
-            <a href="/kadin/disposisi" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-inbox" aria-hidden="true"></i>
-                    <span>Surat Masuk &amp; Disposisi</span>
-                </span>
-                <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
-            </a>
-            <a href="/registrasi-surat" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-send" aria-hidden="true"></i>
-                    <span>Registrasi Surat &amp; SPPD</span>
-                </span>
-            </a>
+            @if(auth()->user()->role === 'admin')
+                <div class="sidebar-section-label">MENU UTAMA &amp; AGENDA</div>
+                <a href="/" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-grid" aria-hidden="true"></i>
+                        <span>Dashboard Admin</span>
+                    </span>
+                </a>
+                <a href="/registrasi-surat" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-send" aria-hidden="true"></i>
+                        <span>Registrasi &amp; Agenda Naskah</span>
+                    </span>
+                </a>
 
-            <div class="sidebar-section-label">VERIFIKASI &amp; OTORISASI TTE</div>
-            <a href="/verifikasi-hierarki" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
-                    <span>Verifikasi Hierarki</span>
-                </span>
-                <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">4</span>
-            </a>
-            <a href="/kadin/validasi" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
-                    <span>Validasi &amp; TTE Kadin</span>
-                </span>
-                <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
-            </a>
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar active">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
 
-            <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-            <a href="/buku-besar" class="nav-link-sidebar active">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
-                    <span>Buku Besar / Laporan</span>
-                </span>
-            </a>
-            <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-patch-check" aria-hidden="true"></i>
-                    <span>Portal Verifikasi Publik</span>
-                </span>
-            </a>
+                <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
+                <a href="/admin/users" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                        <span>Manajemen Akun Pegawai</span>
+                    </span>
+                </a>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @elseif(in_array(auth()->user()->role, ['kasubbag', 'sekdin']))
+                <div class="sidebar-section-label">VERIFIKASI BERJENJANG</div>
+                <a href="/verifikasi-hierarki" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                        <span>Verifikasi Hierarki Naskah</span>
+                    </span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
+                </a>
 
-            <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
-            <a href="/admin/users" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-people" aria-hidden="true"></i>
-                    <span>Manajemen Akun Pegawai</span>
-                </span>
-            </a>
-            <a href="#modalPinTte" data-bs-toggle="modal" class="nav-link-sidebar">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
-                    <span>Pengaturan PIN &amp; Profil</span>
-                </span>
-            </a>
-            <a href="/login" onclick="localStorage.removeItem('esurat_locked_role')" class="nav-link-sidebar text-danger">
-                <span class="d-flex align-items-center gap-3">
-                    <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                    <span>Logout</span>
-                </span>
-            </a>
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar active">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
+
+                <div class="sidebar-section-label">SESI &amp; KEAMANAN</div>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @elseif(auth()->user()->role === 'kadin')
+                <div class="sidebar-section-label">MENU UTAMA PIMPINAN</div>
+                <a href="/kadin" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-grid" aria-hidden="true"></i>
+                        <span>Dashboard Eksekutif</span>
+                    </span>
+                </a>
+                <a href="/kadin/validasi" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+                        <span>Validasi &amp; TTE QR</span>
+                    </span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                </a>
+                <a href="/kadin/disposisi" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-inbox" aria-hidden="true"></i>
+                        <span>Disposisi Surat Masuk</span>
+                    </span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
+                </a>
+
+                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
+                <a href="/buku-besar" class="nav-link-sidebar active">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i>
+                        <span>Buku Besar / Laporan</span>
+                    </span>
+                </a>
+                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Portal Verifikasi Publik</span>
+                    </span>
+                </a>
+
+                <div class="sidebar-section-label">OTORISASI &amp; KEAMANAN</div>
+                <a href="#modalPinTte" data-bs-toggle="modal" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                        <span>Pengaturan PIN / Passphrase TTE</span>
+                    </span>
+                </a>
+                <a href="/logout" class="nav-link-sidebar text-danger">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                        <span>Logout</span>
+                    </span>
+                </a>
+            @endif
         </div>
 
         <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
             <div class="d-flex align-items-center gap-2 mb-2">
-                <div id="sidebar-avatar" class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
-                    AD
+                <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
+                    {{ $userInitials }}
                 </div>
                 <div class="lh-sm overflow-hidden">
-                    <div id="sidebar-name" class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">AD - Admin Disdukcapil</div>
-                    <div id="sidebar-subtitle" class="text-secondary text-truncate" style="font-size: 0.69rem;">Subbag Umum &amp; Kepegawaian</div>
+                    <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">{{ $userName }}</div>
+                    <div class="text-secondary text-truncate" style="font-size: 0.69rem;">{{ $userJabatan }}</div>
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-between px-2 py-1 rounded-2" style="background-color: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
-                <span id="sidebar-status" class="text-success fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.68rem;">
-                    <i class="bi bi-lock-fill" aria-hidden="true"></i> Role Terkunci: Staf Admin
+                <span class="text-success fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.68rem;">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i> {{ $roleStatusLabel }}
                 </span>
                 <span class="badge bg-success text-white" style="font-size: 0.62rem;">RBAC</span>
             </div>
@@ -258,21 +339,6 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="dropdown">
-                    <button class="btn btn-sm border border-primary border-opacity-25 rounded-pill px-3 py-1 d-flex align-items-center gap-2" style="background-color: #EFF6FF; font-size: 0.74rem;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                        <span class="text-primary fw-semibold" id="role-switcher-label">Simulasi Aktor: Staf Admin</span>
-                        <i class="bi bi-chevron-down text-primary" style="font-size: 0.65rem;" aria-hidden="true"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 small" style="min-width: 250px;">
-                        <li class="px-3 py-1 text-secondary fw-bold" style="font-size: 0.68rem; text-transform: uppercase;">Kunci Identitas Aktor (Testing)</li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/admin?redirect=/buku-besar" onclick="lockUserRole('admin')"><i class="bi bi-person-gear text-primary me-2"></i><strong>Staf Admin</strong> (Subbag Umpeg)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/kasubbag?redirect=/buku-besar" onclick="lockUserRole('kasubbag')"><i class="bi bi-clipboard2-check text-warning me-2"></i><strong>Kasubbag Umpeg</strong> (Verifikator I)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/sekdin?redirect=/buku-besar" onclick="lockUserRole('sekdin')"><i class="bi bi-pen text-info me-2"></i><strong>Sekretaris Dinas</strong> (Verifikator II)</a></li>
-                        <li><a class="dropdown-item py-2" href="/switch-role/kadin?redirect=/buku-besar" onclick="lockUserRole('kadin')"><i class="bi bi-qr-code-scan text-success me-2"></i><strong>Kepala Dinas</strong> (Otorisator TTE)</a></li>
-                    </ul>
-                </div>
-
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
                     <span>Selasa, 17 November 2026</span>
@@ -280,25 +346,42 @@
 
                 <div class="dropdown">
                     <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span id="topbar-avatar" class="rounded-circle bg-primary text-white fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">AD</span>
-                        <span id="topbar-name" class="text-dark fw-medium" style="font-size: 0.76rem;">AD - Admin Disdukcapil</span>
+                        <span class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">{{ $userInitials }}</span>
+                        <span class="text-dark fw-medium" style="font-size: 0.76rem;">{{ $userName }}</span>
                         <i class="bi bi-chevron-down text-secondary" style="font-size: 0.65rem;" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small">
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small" style="min-width: 230px;">
                         <li class="px-3 py-2 border-bottom">
-                            <div id="dropdown-name" class="fw-bold text-dark">Rizky Pratama, S.IP</div>
-                            <div id="dropdown-subtitle" class="text-secondary" style="font-size: 0.7rem;">Staf Admin Subbag Umpeg</div>
+                            <div class="fw-bold text-dark">{{ $userName }}</div>
+                            <div class="text-secondary" style="font-size: 0.7rem;">{{ $userJabatan }}</div>
+                            <div class="doc-number-mono text-primary mt-1" style="font-size: 0.68rem;">NIP: {{ $userNip }}</div>
                         </li>
-                        <li><a class="dropdown-item" href="#modalPinTte" data-bs-toggle="modal"><i class="bi bi-person-badge me-2"></i>Profil &amp; Keamanan Akun</a></li>
+                        @if(auth()->user()->role === 'kadin')
+                            <li><a class="dropdown-item" href="#modalPinTte" data-bs-toggle="modal"><i class="bi bi-shield-lock me-2"></i>Pengaturan PIN / Passphrase TTE</a></li>
+                        @endif
                         <li><a class="dropdown-item" href="/verifikasi-dokumen"><i class="bi bi-qr-code-scan me-2"></i>Portal Verifikasi Publik</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="/login" onclick="localStorage.removeItem('esurat_locked_role')"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
         </header>
 
         <main class="p-4 flex-grow-1">
+            @if (session('status'))
+                <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #DCFCE7; color: #15803D; font-size: 0.8rem;">
+                    <i class="bi bi-check-circle-fill flex-shrink-0" aria-hidden="true"></i>
+                    <div class="flex-grow-1">{{ session('status') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <i class="bi bi-shield-exclamation flex-shrink-0" aria-hidden="true"></i>
+                    <div class="flex-grow-1">{{ session('error') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
             <div class="surface-card p-3 px-4 mb-4">
                 <div class="d-flex flex-column flex-xl-row align-items-xl-end justify-content-between gap-3">
                     <div class="row g-3 flex-grow-1">
@@ -537,7 +620,7 @@
                                     </span>
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <a href="/kadin/disposisi" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+                                    <a href="{{ auth()->user()->role === 'kadin' ? '/kadin/disposisi' : '/verifikasi-dokumen' }}" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
                                         <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
                                     </a>
                                 </td>
@@ -642,7 +725,7 @@
                                     </span>
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
+                                    <a href="{{ auth()->user()->role === 'kadin' ? '/kadin/validasi' : (in_array(auth()->user()->role, ['kasubbag', 'sekdin']) ? '/verifikasi-hierarki' : '/verifikasi-dokumen') }}" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
                                         <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
                                     </a>
                                 </td>
@@ -700,145 +783,43 @@
     </div>
 </div>
 
+@if(auth()->user()->role === 'kadin')
 <div class="modal fade" id="modalPinTte" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
             <div class="modal-header border-bottom px-4 py-3">
                 <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
                     <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                    <span>Pengaturan Profil &amp; Keamanan Akun</span>
+                    <span>Pengaturan PIN / Passphrase TTE Kepala Dinas</span>
                 </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="p-3 rounded-2 mb-3 border" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.78rem;">
-                    <strong class="text-primary d-block mb-1" id="modal-role-title">Aktor Aktif: Staf Admin Subbag Umpeg</strong>
-                    <span class="text-secondary">Kredensial Single Gate RBAC terhubung dengan Buku Besar Disdukcapil OKI.</span>
+                    <strong class="text-primary d-block mb-1">Otorisator TTE: {{ $userName }}</strong>
+                    <span class="text-secondary">{{ $userJabatan }} &bull; NIP {{ $userNip }}</span>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small text-dark mb-1">Kata Sandi / Passphrase Saat Ini</label>
+                    <label class="form-label fw-semibold small text-dark mb-1">PIN / Passphrase TTE Saat Ini</label>
                     <input type="password" class="form-control form-control-sm" value="••••••••••••">
                 </div>
                 <div class="mb-0">
-                    <label class="form-label fw-semibold small text-dark mb-1">Kata Sandi / PIN Baru</label>
-                    <input type="password" class="form-control form-control-sm" placeholder="Minimal 8 karakter...">
+                    <label class="form-label fw-semibold small text-dark mb-1">PIN / Passphrase TTE Baru (6 Digit)</label>
+                    <input type="password" class="form-control form-control-sm" placeholder="Masukkan 6 digit PIN baru...">
                 </div>
             </div>
             <div class="modal-footer border-top px-4 py-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan</button>
+                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan PIN</button>
             </div>
         </div>
     </div>
 </div>
+@endif
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const ROLE_PROFILES = {
-        admin: {
-            initials: 'AD',
-            badgeClass: 'bg-primary text-white',
-            sidebarName: 'AD - Admin Disdukcapil',
-            sidebarSub: 'Subbag Umum & Kepegawaian',
-            statusText: 'Role Terkunci: Staf Admin',
-            switcherText: 'Simulasi Aktor: Staf Admin',
-            fullName: 'Rizky Pratama, S.IP',
-            homeUrl: '/?role=admin'
-        },
-        kasubbag: {
-            initials: 'KS',
-            badgeClass: 'bg-warning text-dark',
-            sidebarName: 'KS - Hj. Siti Rahmawati',
-            sidebarSub: 'Kasubbag Umpeg • Verifikator I',
-            statusText: 'Role Terkunci: Kasubbag (Verif I)',
-            switcherText: 'Simulasi Aktor: Kasubbag Umpeg',
-            fullName: 'Hj. Siti Rahmawati, S.Sos., M.Si',
-            homeUrl: '/verifikasi-hierarki?role=kasubbag'
-        },
-        sekdin: {
-            initials: 'SD',
-            badgeClass: 'bg-info text-dark',
-            sidebarName: 'SD - Ir. H. Bambang Irawan',
-            sidebarSub: 'Sekretaris Dinas • Verifikator II',
-            statusText: 'Role Terkunci: Sekdin (Verif II)',
-            switcherText: 'Simulasi Aktor: Sekretaris Dinas',
-            fullName: 'Ir. H. Bambang Irawan, M.M',
-            homeUrl: '/verifikasi-hierarki?role=sekdin'
-        },
-        kadin: {
-            initials: 'KD',
-            badgeClass: 'bg-primary text-white',
-            sidebarName: 'KD - Drs. H. Hendra Suryadi',
-            sidebarSub: 'Kepala Dinas Dukcapil OKI',
-            statusText: 'Role Terkunci: Kepala Dinas',
-            switcherText: 'Simulasi Aktor: Kepala Dinas',
-            fullName: 'Drs. H. Hendra Suryadi, M.Si',
-            homeUrl: '/kadin?role=kadin'
-        }
-    };
-
-    function lockUserRole(role) {
-        if (ROLE_PROFILES[role]) {
-            localStorage.setItem('esurat_locked_role', role);
-        }
-    }
-
-    function applyLockedRole() {
-        const params = new URLSearchParams(window.location.search);
-        const urlRole = params.get('role');
-        if (urlRole && ROLE_PROFILES[urlRole]) {
-            localStorage.setItem('esurat_locked_role', urlRole);
-        }
-
-        const activeRole = localStorage.getItem('esurat_locked_role') || document.body.getAttribute('data-default-role') || 'admin';
-        localStorage.setItem('esurat_locked_role', activeRole);
-        const profile = ROLE_PROFILES[activeRole] || ROLE_PROFILES.admin;
-
-        const sidebarAvatar = document.getElementById('sidebar-avatar');
-        const topbarAvatar = document.getElementById('topbar-avatar');
-        if (sidebarAvatar) {
-            sidebarAvatar.textContent = profile.initials;
-            sidebarAvatar.className = 'rounded-circle fw-bold d-flex align-items-center justify-content-center flex-shrink-0 ' + profile.badgeClass;
-        }
-        if (topbarAvatar) {
-            topbarAvatar.textContent = profile.initials;
-            topbarAvatar.className = 'rounded-circle fw-bold d-inline-flex align-items-center justify-content-center ' + profile.badgeClass;
-        }
-
-        const elMap = {
-            'sidebar-name': profile.sidebarName,
-            'sidebar-subtitle': profile.sidebarSub,
-            'topbar-name': profile.sidebarName,
-            'dropdown-name': profile.fullName,
-            'dropdown-subtitle': profile.sidebarSub,
-            'role-switcher-label': profile.switcherText,
-            'modal-role-title': 'Aktor Aktif: ' + profile.fullName + ' (' + profile.sidebarSub + ')'
-        };
-        Object.keys(elMap).forEach(function(id) {
-            const el = document.getElementById(id);
-            if (el) el.textContent = elMap[id];
-        });
-
-        const statusEl = document.getElementById('sidebar-status');
-        if (statusEl) {
-            statusEl.innerHTML = '<i class="bi bi-lock-fill me-1" aria-hidden="true"></i>' + profile.statusText;
-        }
-
-        const dashLink = document.getElementById('nav-dashboard-link');
-        if (dashLink) {
-            dashLink.setAttribute('href', profile.homeUrl);
-        }
-
-        document.querySelectorAll('a[href^="/"]').forEach(function(link) {
-            const href = link.getAttribute('href');
-            if (!href || href.startsWith('/switch-role') || href.startsWith('/login') || href.includes('role=')) return;
-            const parts = href.split('#');
-            const base = parts[0];
-            const hash = parts[1] ? '#' + parts[1] : '';
-            const sep = base.includes('?') ? '&' : '?';
-            link.setAttribute('href', base + sep + 'role=' + activeRole + hash);
-        });
-    }
+    localStorage.removeItem('esurat_locked_role');
 
     function selectLedgerTab(category, btnEl) {
         document.getElementById('filterJenisNaskah').value = category;
@@ -865,8 +846,6 @@
             row.style.display = (textMatch && jenisMatch && kodeMatch) ? '' : 'none';
         });
     }
-
-    document.addEventListener('DOMContentLoaded', applyLockedRole);
 </script>
 </body>
 </html>
