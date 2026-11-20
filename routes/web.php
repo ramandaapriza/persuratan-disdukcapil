@@ -6,6 +6,7 @@ use App\Http\Controllers\KadinController;
 use App\Http\Controllers\RegistrasiNaskahController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerifikasiHierarkiController;
+use App\Http\Controllers\VerifikasiPublikController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,9 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-Route::get('/verifikasi-dokumen', function () {
-    return view('verifikasi-qr');
-})->name('verifikasi.dokumen');
+Route::get('/verifikasi-dokumen', [VerifikasiPublikController::class, 'index'])->name('verifikasi.dokumen');
+Route::get('/verifikasi-dokumen/unduh/{token}', [VerifikasiPublikController::class, 'unduhPdf'])->name('verifikasi.dokumen.unduh');
 
 /*
 |--------------------------------------------------------------------------
