@@ -174,6 +174,9 @@
         'sekdin' => 'Otoritas: Sekdin (Verif II)',
         default => 'Otoritas: Staf Admin',
     };
+
+    $badgeTte = $menungguTteCount ?? 0;
+    $badgeDisposisi = $menungguDisposisiCount ?? 0;
 @endphp
 
 <div class="d-flex">
@@ -203,32 +206,10 @@
                         <span>Registrasi &amp; Agenda Naskah</span>
                     </span>
                 </a>
-
-                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-                <a href="/buku-besar" class="nav-link-sidebar">
+                <a href="/riwayat-naskah" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                        <span>Buku Besar / Laporan</span>
-                    </span>
-                </a>
-                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-patch-check" aria-hidden="true"></i>
-                        <span>Portal Verifikasi Publik</span>
-                    </span>
-                </a>
-
-                <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
-                <a href="/admin/users" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-people" aria-hidden="true"></i>
-                        <span>Manajemen Akun Pegawai</span>
-                    </span>
-                </a>
-                <a href="/logout" class="nav-link-sidebar text-danger">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                        <span>Logout</span>
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <span>Riwayat &amp; Pantauan Naskah</span>
                     </span>
                 </a>
             @elseif(in_array(auth()->user()->role, ['kasubbag', 'sekdin']))
@@ -237,29 +218,6 @@
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                         <span>Verifikasi Hierarki Naskah</span>
-                    </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
-                </a>
-
-                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-                <a href="/buku-besar" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                        <span>Buku Besar / Laporan</span>
-                    </span>
-                </a>
-                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-patch-check" aria-hidden="true"></i>
-                        <span>Portal Verifikasi Publik</span>
-                    </span>
-                </a>
-
-                <div class="sidebar-section-label">SESI &amp; KEAMANAN</div>
-                <a href="/logout" class="nav-link-sidebar text-danger">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                        <span>Logout</span>
                     </span>
                 </a>
             @elseif(auth()->user()->role === 'kadin')
@@ -275,14 +233,14 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $badgeTte }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $badgeDisposisi }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -347,7 +305,7 @@
             <div class="d-flex align-items-center gap-2">
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
-                    <span>Selasa, 17 November 2026</span>
+                    <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
@@ -380,6 +338,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
             @if (session('error'))
                 <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <i class="bi bi-shield-exclamation flex-shrink-0" aria-hidden="true"></i>
@@ -387,6 +346,19 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
+            @if (isset($errors) && $errors->any())
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Peringatan Validasi:</div>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
+
             <div class="welcome-banner p-4 mb-4 text-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                 <div style="max-width: 680px;">
                     <span class="badge rounded-pill px-3 py-1 mb-2 fw-medium d-inline-flex align-items-center gap-1" style="background-color: rgba(59, 130, 246, 0.25); color: #93C5FD; border: 1px solid rgba(147, 197, 253, 0.3); font-size: 0.72rem;">
@@ -398,9 +370,16 @@
                     </p>
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
-                    <a href="/kadin/validasi" class="btn btn-light btn-sm fw-semibold text-primary px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm">
+                    <button type="button"
+                            onclick="openModalTteMassal()"
+                            class="btn btn-light btn-sm fw-semibold text-primary px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm"
+                            {{ $antreanTte->isEmpty() ? 'disabled' : '' }}>
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
-                        <span>Validasi &amp; TTD Massal</span>
+                        <span>Otorisasi TTE Massal ({{ $badgeTte }})</span>
+                    </button>
+                    <a href="/kadin/validasi" class="btn btn-outline-light btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1" style="border-color: rgba(255,255,255,0.35);">
+                        <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                        <span>Meja Validasi TTE</span>
                     </a>
                     <a href="/buku-besar" class="btn btn-outline-light btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1" style="border-color: rgba(255,255,255,0.35);">
                         <i class="bi bi-printer" aria-hidden="true"></i>
@@ -415,7 +394,7 @@
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Menunggu TTE Kadin</div>
-                                <div class="fs-4 fw-bold text-danger lh-1 mb-1">10</div>
+                                <div class="fs-4 fw-bold text-danger lh-1 mb-1">{{ $badgeTte }}</div>
                                 <div class="text-danger fw-medium" style="font-size: 0.72rem;">
                                     <i class="bi bi-exclamation-circle-fill me-1" aria-hidden="true"></i>Siap dibubuhkan QR Code
                                 </div>
@@ -432,7 +411,7 @@
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Menunggu Disposisi Masuk</div>
-                                <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">2</div>
+                                <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $badgeDisposisi }}</div>
                                 <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
                                     <i class="bi bi-inbox-fill me-1" aria-hidden="true"></i>Diterima Ajudan Kadin
                                 </div>
@@ -449,7 +428,7 @@
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Dokumen Selesai TTE</div>
-                                <div class="fs-4 fw-bold text-success lh-1 mb-1">142</div>
+                                <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $countSelesaiTte ?? 0 }}</div>
                                 <div class="text-success fw-medium" style="font-size: 0.72rem;">
                                     <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Tervalidasi Token UUID
                                 </div>
@@ -466,9 +445,9 @@
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">SPPD &amp; Berita Acara Terbit</div>
-                                <div class="fs-4 fw-bold text-primary lh-1 mb-1">62</div>
+                                <div class="fs-4 fw-bold text-primary lh-1 mb-1">{{ $totalSppdBa ?? 0 }}</div>
                                 <div class="text-primary fw-medium" style="font-size: 0.72rem;">
-                                    <i class="bi bi-briefcase-fill me-1" aria-hidden="true"></i>34 SPPD &bull; 28 Berita Acara
+                                    <i class="bi bi-briefcase-fill me-1" aria-hidden="true"></i>{{ $totalSppd ?? 0 }} SPPD &bull; {{ $totalBeritaAcara ?? 0 }} Berita Acara
                                 </div>
                             </div>
                             <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
@@ -480,10 +459,10 @@
             </div>
 
             <div class="surface-card overflow-hidden">
-                <div class="p-3 px-4 border-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="p-3 px-4 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                     <div>
-                        <h6 class="fw-bold text-dark mb-1">Antrean Dokumen Membutuhkan Tanda Tangan</h6>
-                        <div class="text-secondary" style="font-size: 0.76rem;">Seluruh dokumen telah melewati verifikasi Kasubbag Umpeg &amp; Sekretaris Dinas serta siap diotorisasi.</div>
+                        <h6 class="fw-bold text-dark mb-1">Antrean Dokumen Membutuhkan Tanda Tangan Elektronik (Status: <code>valid_sekdin</code>)</h6>
+                        <div class="text-secondary" style="font-size: 0.76rem;">Seluruh dokumen telah melewati verifikasi Kasubbag Umpeg &amp; Sekretaris Dinas serta siap diotorisasi TTE QR Code.</div>
                     </div>
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         <select id="kadinKodeFilter" onchange="filterKadinTable()" class="form-select form-select-sm fw-medium" style="width: 195px;">
@@ -492,14 +471,23 @@
                             <option value="Kode 800">Kode 800 - Kepegawaian</option>
                             <option value="Kode 00">Kode 00 - Keuangan</option>
                         </select>
-                        <div class="input-group input-group-sm" style="width: 225px;">
+                        <div class="input-group input-group-sm" style="width: 215px;">
                             <span class="input-group-text bg-white border-end-0 text-secondary">
                                 <i class="bi bi-search" aria-hidden="true"></i>
                             </span>
                             <input type="text" id="kadinSearchInput" onkeyup="filterKadinTable()" class="form-control border-start-0 ps-0" placeholder="Cari nomor / perihal...">
                         </div>
-                        <button type="button" onclick="document.getElementById('kadinSearchInput').value=''; document.getElementById('kadinKodeFilter').value='semua'; selectKadinTab('semua', document.querySelector('#kadinTabNav .nav-link'));" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Reset Filter">
+                        <button type="button" onclick="resetKadinFilters()" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Reset Filter">
                             <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                        </button>
+                        <button type="button"
+                                id="btnHeaderTteMassal"
+                                onclick="openModalTteMassal()"
+                                class="btn btn-sm btn-success fw-semibold px-3 py-1 d-inline-flex align-items-center gap-1 shadow-sm"
+                                style="font-size: 0.76rem;"
+                                {{ $antreanTte->isEmpty() ? 'disabled' : '' }}>
+                            <i class="bi bi-check2-all" aria-hidden="true"></i>
+                            <span>Tandatangani Terpilih (<span id="selectedCountBadge">{{ $antreanTte->count() }}</span>)</span>
                         </button>
                     </div>
                 </div>
@@ -508,22 +496,22 @@
                     <ul class="nav nav-tabs ledger-tabs border-0" id="kadinTabNav" data-active-jenis="semua">
                         <li class="nav-item">
                             <button type="button" class="nav-link active" onclick="selectKadinTab('semua', this)">
-                                Semua Antrean <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-1">10</span>
+                                Semua Antrean <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-1">{{ $antreanTte->count() }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button type="button" class="nav-link" onclick="selectKadinTab('Surat Keluar', this)">
-                                Surat Keluar <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">5</span>
+                                Surat Keluar <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $countSkAntrean ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button type="button" class="nav-link" onclick="selectKadinTab('SPPD', this)">
-                                SPPD <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">3</span>
+                                SPPD <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $countSppdAntrean ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
                             <button type="button" class="nav-link" onclick="selectKadinTab('Berita Acara', this)">
-                                Berita Acara <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">2</span>
+                                Berita Acara <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $countBaAntrean ?? 0 }}</span>
                             </button>
                         </li>
                     </ul>
@@ -533,190 +521,91 @@
                     <table class="table table-ledger mb-0" id="kadinQueueTable">
                         <thead>
                             <tr>
-                                <th class="ps-4" style="width: 55px;">NO</th>
-                                <th style="width: 120px;">TANGGAL</th>
+                                <th class="ps-4" style="width: 45px;">
+                                    <input type="checkbox" class="form-check-input" id="checkAllTte" onchange="toggleAllTteCheckboxes(this)" {{ $antreanTte->isNotEmpty() ? 'checked' : 'disabled' }}>
+                                </th>
+                                <th style="width: 50px;">NO</th>
+                                <th style="width: 115px;">TANGGAL</th>
                                 <th style="width: 235px;">NOMOR DOKUMEN &amp; KODE BIDANG</th>
-                                <th style="width: 130px;">JENIS NASKAH</th>
+                                <th style="width: 135px;">JENIS NASKAH</th>
                                 <th>PERIHAL &amp; TUJUAN</th>
-                                <th style="width: 230px;">STATUS VERIFIKASI HIERARKI</th>
-                                <th class="pe-4 text-end" style="width: 150px;">AKSI</th>
+                                <th style="width: 215px;">STATUS VERIFIKASI HIERARKI</th>
+                                <th class="pe-4 text-end" style="width: 155px;">AKSI</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr data-jenis="Surat Keluar" data-kode="Kode 400">
-                                <td class="ps-4 fw-bold text-dark font-monospace">1</td>
-                                <td class="text-secondary">12 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-primary">400/2763/disdukcapil/2026</div>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 400 - Catatan Sipil
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-send-fill me-1" aria-hidden="true"></i>Surat Keluar
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Penyampaian Laporan Rekapitulasi Penerbitan Akta Pencatatan Sipil Semester II</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.73rem;">
-                                        <i class="bi bi-building me-1" aria-hidden="true"></i>Tujuan: Ditjen Dukcapil Kemendagri RI - Jakarta
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
-                                        <i class="bi bi-pen-fill" aria-hidden="true"></i>
-                                        <span>Review &amp; TTD</span>
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-jenis="SPPD" data-kode="Kode 800">
-                                <td class="ps-4 fw-bold text-dark font-monospace">2</td>
-                                <td class="text-secondary">12 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-dark">090/091/SPPD/DUKCAPIL/2026</div>
-                                    <span class="badge bg-warning bg-opacity-15 text-dark fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 800 - Kepegawaian
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
-                                        <i class="bi bi-briefcase-fill me-1" aria-hidden="true"></i>SPPD
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Rapat Koordinasi Teknis Pemutakhiran Data &amp; Rekonsiliasi Blangko KTP-el</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.73rem;">
-                                        <i class="bi bi-person-badge me-1" aria-hidden="true"></i>Pegawai: Drs. H. Ahmad Fauzi, M.Si (Palembang)
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
-                                        <i class="bi bi-pen-fill" aria-hidden="true"></i>
-                                        <span>Review &amp; TTD</span>
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-jenis="Berita Acara" data-kode="Kode 400">
-                                <td class="ps-4 fw-bold text-dark font-monospace">3</td>
-                                <td class="text-secondary">11 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-dark">400/028/BA-SIAK/XI/2026</div>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 400 - Catatan Sipil
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #EDE9FE; color: #6D28D9; font-size: 0.72rem;">
-                                        <i class="bi bi-file-earmark-text-fill me-1" aria-hidden="true"></i>Berita Acara
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Berita Acara Serah Terima (BAST) Distribusi 1.500 Keping Blangko KTP-el</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.73rem;">
-                                        <i class="bi bi-building me-1" aria-hidden="true"></i>Tujuan: Kantor Kecamatan Kayuagung
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
-                                        <i class="bi bi-pen-fill" aria-hidden="true"></i>
-                                        <span>Review &amp; TTD</span>
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-jenis="Surat Keluar" data-kode="Kode 400">
-                                <td class="ps-4 fw-bold text-dark font-monospace">4</td>
-                                <td class="text-secondary">10 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-primary">470/189/Disdukcapil-OKI/XI/2026</div>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 400 - Catatan Sipil
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-send-fill me-1" aria-hidden="true"></i>Surat Keluar
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Koordinasi Integrasi SIAK Terpusat dengan Portal Satu Data Kab. OKI</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.73rem;">
-                                        <i class="bi bi-building me-1" aria-hidden="true"></i>Tujuan: Dinas Kominfo Kabupaten OKI
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
-                                        <i class="bi bi-pen-fill" aria-hidden="true"></i>
-                                        <span>Review &amp; TTD</span>
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-jenis="Surat Keluar" data-kode="Kode 00">
-                                <td class="ps-4 fw-bold text-dark font-monospace">5</td>
-                                <td class="text-secondary">09 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-primary">00/2762/disdukcapil/2026</div>
-                                    <span class="badge bg-secondary bg-opacity-10 text-dark border fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 00 - Keuangan
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-send-fill me-1" aria-hidden="true"></i>Surat Keluar
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Pengajuan SPP-GU dan Laporan Realisasi Dana Operasional Pelayanan Keliling</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.73rem;">
-                                        <i class="bi bi-building me-1" aria-hidden="true"></i>Tujuan: BPKAD Kabupaten OKI
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/kadin/validasi" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
-                                        <i class="bi bi-pen-fill" aria-hidden="true"></i>
-                                        <span>Review &amp; TTD</span>
-                                    </a>
-                                </td>
-                            </tr>
+                            @forelse ($antreanTte as $idx => $item)
+                                @php
+                                    $bidangBadgeClass = match($item['kode_bidang']) {
+                                        '800' => 'bg-warning bg-opacity-15 text-dark',
+                                        '00' => 'bg-secondary bg-opacity-10 text-dark border',
+                                        default => 'bg-primary bg-opacity-10 text-primary',
+                                    };
+                                @endphp
+                                <tr data-jenis="{{ $item['jenis_label'] }}" data-kode="Kode {{ $item['kode_bidang'] }}">
+                                    <td class="ps-4">
+                                        <input type="checkbox"
+                                               class="form-check-input check-tte-item"
+                                               value="{{ $item['key'] }}"
+                                               data-nomor="{{ $item['nomor'] }}"
+                                               data-jenis="{{ $item['jenis_label'] }}"
+                                               checked
+                                               onchange="updateSelectedTteCount()">
+                                    </td>
+                                    <td class="fw-bold text-dark font-monospace">{{ $idx + 1 }}</td>
+                                    <td class="text-secondary">{{ $item['tanggal_short'] }}</td>
+                                    <td>
+                                        <div class="doc-number-mono text-primary">{{ $item['nomor'] }}</div>
+                                        <span class="badge {{ $bidangBadgeClass }} fw-medium mt-1" style="font-size: 0.68rem;">
+                                            Kode {{ $item['kode_bidang'] }} - {{ $item['nama_bidang'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: {{ $item['jenis_badge_bg'] }}; color: {{ $item['jenis_badge_color'] }}; font-size: 0.72rem;">
+                                            <i class="bi {{ $item['jenis_icon'] }} me-1" aria-hidden="true"></i>{{ $item['jenis_label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ $item['perihal'] }}</div>
+                                        <div class="text-secondary mt-1" style="font-size: 0.73rem;">
+                                            <i class="bi bi-building me-1" aria-hidden="true"></i>{{ $item['sub_info'] }}
+                                        </div>
+                                        @if(!empty($item['file_url']))
+                                            <a href="{{ $item['file_url'] }}" target="_blank" class="badge bg-info bg-opacity-10 text-primary text-decoration-none border border-primary border-opacity-25 mt-1" style="font-size: 0.66rem;">
+                                                <i class="bi bi-paperclip me-1"></i>Pratinjau Lampiran
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
+                                            <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Kasubbag Umpeg &amp; Sekdin
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a href="{{ $item['validasi_url'] }}" class="btn btn-primary btn-sm fw-semibold px-3 py-1 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size: 0.75rem;">
+                                            <i class="bi bi-pen-fill" aria-hidden="true"></i>
+                                            <span>Review &amp; TTE</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-secondary">
+                                        <i class="bi bi-patch-check-fill text-success fs-4 d-block mb-1"></i>
+                                        Seluruh antrean naskah berstatus <code>valid_sekdin</code> telah selesai ditandatangani secara elektronik.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
                 <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
                     <span class="text-secondary" style="font-size: 0.76rem;">
-                        Menampilkan <strong>1 &ndash; 5</strong> dari <strong>10</strong> dokumen dalam antrean tanda tangan Kepala Dinas
+                        Menampilkan <strong>{{ $antreanTte->count() }}</strong> dokumen dalam antrean Tanda Tangan Elektronik Kepala Dinas
                     </span>
                     <a href="/kadin/validasi" class="btn btn-sm btn-outline-primary rounded-2 px-3 py-1 fw-medium" style="font-size: 0.76rem;">
-                        Lihat Semua Antrean TTE (10) <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+                        Buka Meja Validasi &amp; TTE ({{ $antreanTte->count() }}) <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
@@ -729,34 +618,99 @@
     </div>
 </div>
 
+{{-- MODAL 1: OTORISASI TTE MASSAL --}}
+<div class="modal fade" id="modalTteMassal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <form action="{{ route('kadin.tte-massal') }}" method="POST" id="formTteMassal">
+                @csrf
+                <div id="hiddenMassalItemsContainer"></div>
+
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+                        <span>Otorisasi Tanda Tangan Elektronik (TTE) Massal</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body p-4 small">
+                    <div class="p-3 rounded-2 mb-3 border" style="background-color: #EFF6FF; border-color: #BFDBFE !important;">
+                        <div class="fw-bold text-primary mb-1">
+                            <i class="bi bi-files me-1"></i><span id="modalMassalCountText">0</span> Dokumen Terpilih Siap Diotorisasi
+                        </div>
+                        <div class="text-secondary" id="modalMassalListText" style="font-size: 0.73rem;">-</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPinTteMassal" class="form-label fw-semibold text-dark mb-1">
+                            Passphrase / PIN Keamanan TTE Kepala Dinas <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-shield-lock-fill"></i></span>
+                            <input type="password" name="pin_tte" id="inputPinTteMassal" class="form-control py-2" placeholder="Masukkan 6 digit PIN TTE Anda..." required>
+                        </div>
+                        <div class="form-text" style="font-size: 0.71rem;">
+                            Setiap dokumen akan diterbitkan Token UUID unik secara otomatis dalam satu transaksi database.
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="inputCatatanMassal" class="form-label fw-semibold text-dark mb-1">
+                            Catatan Otorisasi Pimpinan (Opsional)
+                        </label>
+                        <textarea name="catatan" id="inputCatatanMassal" class="form-control form-control-sm" rows="2" placeholder="Contoh: Disahkan melalui Otorisasi TTE Massal Kepala Dinas."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-success fw-semibold px-3">
+                        <i class="bi bi-patch-check-fill me-1"></i>Sah &amp; Bubuhkan TTE Massal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL 2: PENGATURAN PIN / PASSPHRASE TTE MANDIRI (ZERO-KNOWLEDGE ADMIN) --}}
 <div class="modal fade" id="modalPinTte" tabindex="-1" aria-labelledby="modalPinTteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalPinTteLabel">
-                    <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                    <span>Panel Keamanan PIN / Passphrase TTE Kadin</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="p-3 rounded-2 mb-3 border" style="background-color: #ECFDF5; border-color: #A7F3D0 !important; font-size: 0.78rem;">
-                    <strong class="text-success d-block mb-1"><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Sertifikat Elektronik BSrE Aktif</strong>
-                    <span class="text-secondary">Otorisator: <strong>{{ $userName }}</strong> (NIP. {{ $userNip }})</span>
+            <form action="{{ route('kadin.pin-tte.update') }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalPinTteLabel">
+                        <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
+                        <span>Panel Keamanan PIN / Passphrase TTE Kadin</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small text-dark mb-1">Passphrase / PIN TTE Saat Ini</label>
-                    <input type="password" class="form-control form-control-sm" value="••••••••••••">
+                <div class="modal-body p-4">
+                    <div class="p-3 rounded-2 mb-3 border" style="background-color: #ECFDF5; border-color: #A7F3D0 !important; font-size: 0.78rem;">
+                        <strong class="text-success d-block mb-1"><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Sertifikat Elektronik BSrE Aktif (Zero-Knowledge Admin)</strong>
+                        <span class="text-secondary">Otorisator: <strong>{{ $userName }}</strong> (NIP. {{ $userNip }})</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">Verifikasi PIN TTE Saat Ini / Kata Sandi Akun <span class="text-danger">*</span></label>
+                        <input type="password" name="kredensial_verifikasi" class="form-control form-control-sm" placeholder="Masukkan PIN TTE lama atau Password login Anda..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">PIN TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Contoh: 123456" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold small text-dark mb-1">Konfirmasi PIN TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru_confirmation" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Ketik ulang 6 digit PIN TTE baru..." required>
+                    </div>
                 </div>
-                <div class="mb-0">
-                    <label class="form-label fw-semibold small text-dark mb-1">Passphrase / PIN TTE Baru</label>
-                    <input type="password" class="form-control form-control-sm" placeholder="Minimal 8 karakter kombinasi huruf &amp; angka...">
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-primary fw-semibold">
+                        <i class="bi bi-key-fill me-1"></i>Simpan Perubahan PIN TTE
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan PIN</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -775,13 +729,19 @@
         filterKadinTable();
     }
 
+    function resetKadinFilters() {
+        document.getElementById('kadinSearchInput').value = '';
+        document.getElementById('kadinKodeFilter').value = 'semua';
+        selectKadinTab('semua', document.querySelector('#kadinTabNav .nav-link'));
+    }
+
     function filterKadinTable() {
         const nav = document.getElementById('kadinTabNav');
         const jenis = nav.getAttribute('data-active-jenis') || 'semua';
         const kode = document.getElementById('kadinKodeFilter').value;
         const q = (document.getElementById('kadinSearchInput').value || '').toLowerCase();
 
-        document.querySelectorAll('#kadinQueueTable tbody tr').forEach(function(row) {
+        document.querySelectorAll('#kadinQueueTable tbody tr[data-jenis]').forEach(function(row) {
             const rowJenis = row.getAttribute('data-jenis') || '';
             const rowKode = row.getAttribute('data-kode') || '';
             const matchText = row.innerText.toLowerCase().includes(q);
@@ -789,6 +749,46 @@
             const matchKode = (kode === 'semua') || (rowKode === kode);
             row.style.display = (matchText && matchJenis && matchKode) ? '' : 'none';
         });
+    }
+
+    function toggleAllTteCheckboxes(masterEl) {
+        document.querySelectorAll('.check-tte-item').forEach(cb => {
+            cb.checked = masterEl.checked;
+        });
+        updateSelectedTteCount();
+    }
+
+    function updateSelectedTteCount() {
+        const checked = document.querySelectorAll('.check-tte-item:checked');
+        const badge = document.getElementById('selectedCountBadge');
+        if (badge) badge.textContent = checked.length;
+    }
+
+    function openModalTteMassal() {
+        let checked = Array.from(document.querySelectorAll('.check-tte-item:checked'));
+        if (checked.length === 0) {
+            checked = Array.from(document.querySelectorAll('.check-tte-item'));
+            checked.forEach(cb => cb.checked = true);
+            updateSelectedTteCount();
+        }
+
+        const container = document.getElementById('hiddenMassalItemsContainer');
+        container.innerHTML = '';
+
+        const nomors = [];
+        checked.forEach(cb => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'items[]';
+            input.value = cb.value;
+            container.appendChild(input);
+            nomors.push(cb.getAttribute('data-nomor'));
+        });
+
+        document.getElementById('modalMassalCountText').textContent = checked.length;
+        document.getElementById('modalMassalListText').textContent = 'Nomor Naskah: ' + (nomors.join(', ') || '-');
+
+        new bootstrap.Modal(document.getElementById('modalTteMassal')).show();
     }
 </script>
 </body>

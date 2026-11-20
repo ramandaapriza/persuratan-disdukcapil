@@ -137,6 +137,22 @@
         .table-ledger tbody tr:hover {
             background-color: #F8FAFC;
         }
+
+        @media print {
+            .sidebar, header, footer, .no-print {
+                display: none !important;
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            body {
+                background-color: #FFFFFF !important;
+            }
+            .surface-card {
+                box-shadow: none !important;
+                border: 1px solid #000000 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -166,6 +182,36 @@
         'sekdin' => 'Otoritas: Sekdin (Verif II)',
         default => 'Otoritas: Staf Admin',
     };
+
+    $badgeTte = $menungguTteCount ?? 0;
+    $badgeDisposisi = $menungguDisposisiCount ?? 0;
+
+    $activeDisp = $activeSuratMasuk ? $activeSuratMasuk->disposisi->last() : null;
+    $activeKodeBidang = $activeDisp?->kodeKlasifikasi?->kode_bidang
+        ?? ($activeSuratMasuk?->kodeKlasifikasi?->kode_bidang ?? '400');
+
+    $defaultUnitMap = [
+        '400' => [
+            'unit' => 'Bidang Catatan Sipil (Kode 400)',
+            'penerima' => 'Drs. H. M. Amin, M.Si (Kabid PIAK & Capil)',
+        ],
+        '800' => [
+            'unit' => 'Subbag Kepegawaian & Umum (Kode 800)',
+            'penerima' => 'Hj. Siti Rahmawati, S.Sos., M.Si (Kasubbag Umpeg)',
+        ],
+        '00' => [
+            'unit' => 'Subbag Keuangan (Kode 00)',
+            'penerima' => 'Hendri Wijaya, S.E., Ak (Kasubbag Keuangan)',
+        ],
+    ];
+
+    $selectedUnitValue = $activeDisp?->diserahkan_kepada_unit ?? ($defaultUnitMap[$activeKodeBidang]['unit'] ?? 'Bidang Catatan Sipil (Kode 400)');
+    $selectedPenerimaValue = $activeDisp?->nama_pegawai_penerima ?? ($defaultUnitMap[$activeKodeBidang]['penerima'] ?? 'Drs. H. M. Amin, M.Si (Kabid PIAK & Capil)');
+    $selectedTanggalTerima = $activeDisp?->tanggal_menerima?->format('Y-m-d') ?? now()->format('Y-m-d');
+    $selectedSifat = $activeDisp?->sifat_disposisi ?? ($activeSuratMasuk?->sifat_surat ?? 'Segera');
+    $selectedInstruksi = is_array($activeDisp?->instruksi_cepat) ? $activeDisp->instruksi_cepat : ['Tindak Lanjuti', 'Siapkan Konsep Balasan'];
+    $selectedCatatan = $activeDisp?->catatan_kadin ?? 'Segera tindak lanjuti sesuai ketentuan peraturan perundang-undangan dan koordinasikan konsep balasan/laporan melalui Sekretaris Dinas sebelum dinaikkan untuk Tanda Tangan Elektronik Kepala Dinas.';
+    $selectedStatusDisp = $activeDisp?->status_disposisi ?? 'diproses';
 @endphp
 
 <div class="d-flex">
@@ -181,80 +227,7 @@
         </div>
 
         <div class="px-3 py-2 d-flex flex-column gap-1 flex-grow-1 overflow-y-auto">
-            @if(auth()->user()->role === 'admin')
-                <div class="sidebar-section-label">MENU UTAMA &amp; AGENDA</div>
-                <a href="/" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-grid" aria-hidden="true"></i>
-                        <span>Dashboard Admin</span>
-                    </span>
-                </a>
-                <a href="/registrasi-surat" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-send" aria-hidden="true"></i>
-                        <span>Registrasi &amp; Agenda Naskah</span>
-                    </span>
-                </a>
-
-                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-                <a href="/buku-besar" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                        <span>Buku Besar / Laporan</span>
-                    </span>
-                </a>
-                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-patch-check" aria-hidden="true"></i>
-                        <span>Portal Verifikasi Publik</span>
-                    </span>
-                </a>
-
-                <div class="sidebar-section-label">ADMINISTRASI &amp; KEAMANAN</div>
-                <a href="/admin/users" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-people" aria-hidden="true"></i>
-                        <span>Manajemen Akun Pegawai</span>
-                    </span>
-                </a>
-                <a href="/logout" class="nav-link-sidebar text-danger">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                        <span>Logout</span>
-                    </span>
-                </a>
-            @elseif(in_array(auth()->user()->role, ['kasubbag', 'sekdin']))
-                <div class="sidebar-section-label">VERIFIKASI BERJENJANG</div>
-                <a href="/verifikasi-hierarki" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
-                        <span>Verifikasi Hierarki Naskah</span>
-                    </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
-                </a>
-
-                <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
-                <a href="/buku-besar" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                        <span>Buku Besar / Laporan</span>
-                    </span>
-                </a>
-                <a href="/verifikasi-dokumen" class="nav-link-sidebar">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-patch-check" aria-hidden="true"></i>
-                        <span>Portal Verifikasi Publik</span>
-                    </span>
-                </a>
-
-                <div class="sidebar-section-label">SESI &amp; KEAMANAN</div>
-                <a href="/logout" class="nav-link-sidebar text-danger">
-                    <span class="d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-                        <span>Logout</span>
-                    </span>
-                </a>
-            @elseif(auth()->user()->role === 'kadin')
+            @if(auth()->user()->role === 'kadin')
                 <div class="sidebar-section-label">MENU UTAMA PIMPINAN</div>
                 <a href="/kadin" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
@@ -267,14 +240,14 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $badgeTte }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar active">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox-fill" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $badgeDisposisi }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -326,7 +299,7 @@
         </div>
     </aside>
 
-    <div class="flex-grow-1 d-flex flex-column min-vh-100" style="margin-left: 260px;">
+    <div class="flex-grow-1 d-flex flex-column min-vh-100 main-wrapper" style="margin-left: 260px;">
         <header class="bg-white border-bottom px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
             <div class="small">
                 <span class="text-secondary">Disdukcapil OKI</span>
@@ -339,7 +312,7 @@
             <div class="d-flex align-items-center gap-2">
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
-                    <span>Selasa, 17 November 2026</span>
+                    <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
@@ -366,269 +339,320 @@
 
         <main class="p-4 flex-grow-1">
             @if (session('status'))
-                <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #DCFCE7; color: #15803D; font-size: 0.8rem;">
+                <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm no-print" role="alert" style="background-color: #DCFCE7; color: #15803D; font-size: 0.8rem;">
                     <i class="bi bi-check-circle-fill flex-shrink-0" aria-hidden="true"></i>
                     <div class="flex-grow-1">{{ session('status') }}</div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
             @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 d-flex align-items-center gap-2 border-0 shadow-sm no-print" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <i class="bi bi-shield-exclamation flex-shrink-0" aria-hidden="true"></i>
                     <div class="flex-grow-1">{{ session('error') }}</div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
-            <div class="row g-4 mb-4">
-                <div class="col-12 col-lg-5">
-                    <div class="surface-card h-100 d-flex flex-column">
-                        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
-                                    <i class="bi bi-envelope-open-fill" aria-hidden="true"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Detail Agenda Surat Masuk (#0142)</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Registrasi Buku Agenda &amp; Pelacakan Ajudan</div>
-                                </div>
-                            </div>
-                            <span class="badge rounded-2 px-2 py-1 fw-semibold doc-number-mono" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.73rem;">
-                                #0142
-                            </span>
-                        </div>
 
-                        <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-6">
-                                        <div class="p-2 px-3 rounded-2 border" style="background-color: var(--color-slate-50);">
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Nomor Urut Agenda</div>
-                                            <div class="fw-bold text-dark doc-number-mono fs-6">#0142</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="p-2 px-3 rounded-2 border" style="background-color: var(--color-slate-50);">
-                                            <div class="text-secondary" style="font-size: 0.72rem;">Tanggal Diterima Disdukcapil</div>
-                                            <div class="fw-bold text-dark" style="font-size: 0.9rem;">09 Nov 2026</div>
-                                        </div>
-                                    </div>
-                                </div>
+            @if (isset($errors) && $errors->any())
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm no-print" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                    <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Validasi Disposisi Gagal:</div>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
+                </div>
+            @endif
 
-                                <div class="mb-3 pb-3 border-bottom">
-                                    <div class="text-secondary mb-1" style="font-size: 0.74rem;">Pengirim Surat</div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.9rem;">Sekretariat Daerah Kab. OKI</div>
-                                </div>
-
-                                <div class="row g-3 mb-3 pb-3 border-bottom">
-                                    <div class="col-5">
-                                        <div class="text-secondary mb-1" style="font-size: 0.74rem;">Tanggal Surat</div>
-                                        <div class="fw-semibold text-dark" style="font-size: 0.84rem;">06 Nov 2026</div>
-                                    </div>
-                                    <div class="col-7">
-                                        <div class="text-secondary mb-1" style="font-size: 0.74rem;">Keterangan Nomor Surat</div>
-                                        <div class="doc-number-mono text-primary">005/341/Setda-OKI/2026</div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="text-secondary mb-1" style="font-size: 0.74rem;">Perihal Surat</div>
-                                    <div class="p-3 rounded-2 border text-dark fw-medium" style="background-color: var(--color-slate-50); font-size: 0.84rem; line-height: 1.5;">
-                                        Permintaan Data Agregat Kependudukan Bersih Semester II
-                                    </div>
-                                </div>
-
-                                <div class="ajudan-tracking-box p-3 mb-4">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <span class="fw-bold text-success d-flex align-items-center gap-1" style="font-size: 0.76rem;">
-                                            <i class="bi bi-arrow-up-right-circle-fill" aria-hidden="true"></i> Pelacakan Kenaikan Surat ke Kadin
-                                        </span>
-                                        <span class="badge rounded-pill bg-success text-white fw-medium px-2 py-1" style="font-size: 0.69rem;">
-                                            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Diterima Ajudan Kadin
-                                        </span>
-                                    </div>
-                                    <div class="row g-2 pt-1" style="font-size: 0.78rem;">
-                                        <div class="col-12 col-sm-6">
-                                            <div class="text-secondary" style="font-size: 0.71rem;">Tanggal Naik ke Kadin</div>
-                                            <div class="fw-semibold text-dark doc-number-mono"><i class="bi bi-clock me-1 text-success" aria-hidden="true"></i>10 Nov 2026, 08:15 WIB</div>
-                                        </div>
-                                        <div class="col-12 col-sm-6">
-                                            <div class="text-secondary" style="font-size: 0.71rem;">Nama Ajudan Penerima</div>
-                                            <div class="fw-semibold text-dark"><i class="bi bi-person-check-fill me-1 text-success" aria-hidden="true"></i>Rizky Pratama, S.IP</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#modalLampiranPdf" class="btn btn-outline-primary btn-sm fw-semibold py-2 rounded-2 d-flex align-items-center justify-content-center gap-2" style="font-size: 0.84rem;">
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger" aria-hidden="true"></i>
-                                    <span>Lihat Lampiran PDF Surat Masuk</span>
-                                </button>
-                            </div>
+            {{-- BARIS PEMILIHAN ANTREAN SURAT MASuk YANG SUDAH NAIK KE AJUDAN / KADIN --}}
+            <div class="surface-card p-3 px-4 mb-4 no-print">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.88rem;">
+                            <i class="bi bi-inbox-fill text-primary me-1"></i>Daftar Surat Masuk di Meja Kepala Dinas (Diterima Ajudan)
+                        </h6>
+                        <div class="text-secondary" style="font-size: 0.74rem;">
+                            Pilih nomor agenda surat masuk di bawah untuk memberikan instruksi disposisi baru atau mencetak lembar disposisi:
                         </div>
                     </div>
-                </div>
-
-                <div class="col-12 col-lg-7">
-                    <div class="surface-card h-100 d-flex flex-column">
-                        <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
-                                    <i class="bi bi-send-check-fill" aria-hidden="true"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Form Instruksi Disposisi Kadin &amp; Penyerahan</h6>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Penentuan bidang penerima (400, 800, 00), tanggal terima, dan arahan Kepala Dinas</div>
-                                </div>
-                            </div>
-                            <span class="badge rounded-pill fw-semibold px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.71rem;">
-                                <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Menunggu Disposisi
-                            </span>
-                        </div>
-
-                        <div class="p-4 flex-grow-1">
-                            <form onsubmit="submitDisposisiForm(); return false;">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold text-dark small mb-2">
-                                        Diteruskan ke Bidang / Subbagian (Kode Klasifikasi) <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="row g-2" id="unitCardsContainer">
-                                        <div class="col-12 col-md-4">
-                                            <label class="unit-option-card selected d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, 'Drs. H. M. Amin, M.Si (Kabid PIAK & Capil)')">
-                                                <input class="form-check-input mt-1" type="radio" name="unit_tujuan" value="Bidang Catatan Sipil (Kode 400)" checked>
-                                                <div>
-                                                    <div class="fw-bold text-dark" style="font-size: 0.79rem;">Bidang Catatan Sipil</div>
-                                                    <span class="badge bg-primary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 400</span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <label class="unit-option-card d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, 'Hj. Siti Rahmawati, S.Sos (Kasubbag Umpeg)')">
-                                                <input class="form-check-input mt-1" type="radio" name="unit_tujuan" value="Subbag Kepegawaian & Umum (Kode 800)">
-                                                <div>
-                                                    <div class="fw-bold text-dark" style="font-size: 0.79rem;">Subbag Kepegawaian &amp; Umum</div>
-                                                    <span class="badge bg-secondary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 800</span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                        <div class="col-12 col-md-4">
-                                            <label class="unit-option-card d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, 'Hendri Wijaya, S.E., Ak (Kasubbag Keuangan)')">
-                                                <input class="form-check-input mt-1" type="radio" name="unit_tujuan" value="Subbag Keuangan (Kode 00)">
-                                                <div>
-                                                    <div class="fw-bold text-dark" style="font-size: 0.79rem;">Subbag Keuangan</div>
-                                                    <span class="badge bg-secondary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 00</span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 mb-3">
-                                    <div class="col-12 col-md-7">
-                                        <label for="pegawaiPenerima" class="form-label fw-semibold text-dark small mb-1">
-                                            Nama Penerima Disposisi <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-vcard" aria-hidden="true"></i></span>
-                                            <input type="text" id="pegawaiPenerima" class="form-control" value="Drs. H. M. Amin, M.Si (Kabid PIAK &amp; Capil)" placeholder="Masukkan nama pejabat / staf penerima..." required>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-5">
-                                        <label for="tanggalMenerima" class="form-label fw-semibold text-dark small mb-1">
-                                            Tanggal Terima <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
-                                            <input type="date" id="tanggalMenerima" class="form-control" value="2026-11-17" required>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 mb-3">
-                                    <div class="col-12 col-md-5">
-                                        <label class="form-label fw-semibold text-dark small mb-2">
-                                            Sifat Disposisi <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <div class="form-check form-check-inline m-0 border rounded-2 px-2 py-1 bg-light">
-                                                <input class="form-check-input" type="radio" name="sifat_disposisi" id="sifatSegera" checked>
-                                                <label class="form-check-label fw-semibold text-danger" for="sifatSegera" style="font-size: 0.77rem;">Segera</label>
-                                            </div>
-                                            <div class="form-check form-check-inline m-0 border rounded-2 px-2 py-1 bg-light">
-                                                <input class="form-check-input" type="radio" name="sifat_disposisi" id="sifatPenting">
-                                                <label class="form-check-label fw-medium text-dark" for="sifatPenting" style="font-size: 0.77rem;">Penting</label>
-                                            </div>
-                                            <div class="form-check form-check-inline m-0 border rounded-2 px-2 py-1 bg-light">
-                                                <input class="form-check-input" type="radio" name="sifat_disposisi" id="sifatRahasia">
-                                                <label class="form-check-label fw-medium text-dark" for="sifatRahasia" style="font-size: 0.77rem;">Rahasia</label>
-                                            </div>
-                                            <div class="form-check form-check-inline m-0 border rounded-2 px-2 py-1 bg-light">
-                                                <input class="form-check-input" type="radio" name="sifat_disposisi" id="sifatBiasa">
-                                                <label class="form-check-label fw-medium text-dark" for="sifatBiasa" style="font-size: 0.77rem;">Biasa</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-7">
-                                        <label class="form-label fw-semibold text-dark small mb-2">
-                                            Instruksi Cepat Pimpinan
-                                        </label>
-                                        <div class="row g-2">
-                                            <div class="col-6">
-                                                <div class="form-check border rounded-2 px-3 py-1 bg-light">
-                                                    <input class="form-check-input" type="checkbox" id="inst1" checked>
-                                                    <label class="form-check-label fw-medium text-dark" for="inst1" style="font-size: 0.77rem;">Tindak Lanjuti</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-check border rounded-2 px-3 py-1 bg-light">
-                                                    <input class="form-check-input" type="checkbox" id="inst2" checked>
-                                                    <label class="form-check-label fw-medium text-dark" for="inst2" style="font-size: 0.77rem;">Siapkan Konsep Balasan</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-check border rounded-2 px-3 py-1 bg-light">
-                                                    <input class="form-check-input" type="checkbox" id="inst3">
-                                                    <label class="form-check-label fw-medium text-dark" for="inst3" style="font-size: 0.77rem;">Koordinasikan</label>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="form-check border rounded-2 px-3 py-1 bg-light">
-                                                    <input class="form-check-input" type="checkbox" id="inst4">
-                                                    <label class="form-check-label fw-medium text-dark" for="inst4" style="font-size: 0.77rem;">Arsipkan</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="catatanKadin" class="form-label fw-semibold text-dark small mb-1">
-                                        Catatan / Instruksi Khusus Kepala Dinas
-                                    </label>
-                                    <textarea id="catatanKadin" class="form-control form-control-sm" rows="3" style="font-size: 0.83rem;" placeholder="Tuliskan arahan spesifik Kepala Dinas kepada unit penerima...">Segera rekapitulasi data DAK2 Semester II yang telah tervalidasi SIAK Terpusat, koordinasikan draf surat pengantar dengan Sekdin sebelum dinaikkan untuk TTE.</textarea>
-                                </div>
-
-                                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 pt-3 border-top">
-                                    <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-2" style="font-size: 0.82rem;">
-                                        <i class="bi bi-printer" aria-hidden="true"></i>
-                                        <span>Cetak Lembar Disposisi</span>
-                                    </button>
-                                    <button type="submit" class="btn btn-primary btn-sm fw-semibold px-4 py-2 rounded-2 d-inline-flex align-items-center gap-2 shadow-sm" style="font-size: 0.82rem;">
-                                        <i class="bi bi-send-fill" aria-hidden="true"></i>
-                                        <span>Kirim Instruksi Disposisi</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        @foreach($suratMasukKadinList as $smOption)
+                            @php
+                                $isCurrentSm = $activeSuratMasuk && $activeSuratMasuk->id === $smOption->id;
+                                $belumDisposisi = $smOption->disposisi->isEmpty();
+                            @endphp
+                            <a href="{{ route('kadin.disposisi', ['surat_masuk_id' => $smOption->id]) }}"
+                               class="btn btn-sm {{ $isCurrentSm ? 'btn-primary fw-semibold shadow-sm' : ($belumDisposisi ? 'btn-outline-danger fw-semibold' : 'btn-outline-secondary') }} py-1 px-2 d-inline-flex align-items-center gap-1"
+                               style="font-size: 0.74rem;">
+                                <span class="doc-number-mono">#{{ $smOption->nomor_urut_agenda }}</span>
+                                <span>&bull; {{ \Illuminate\Support\Str::limit($smOption->pengirim, 20) }}</span>
+                                @if($belumDisposisi)
+                                    <span class="badge rounded-pill bg-warning text-dark" style="font-size: 0.62rem;">Baru</span>
+                                @else
+                                    <i class="bi bi-check2-circle"></i>
+                                @endif
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             </div>
 
-            <div class="surface-card overflow-hidden">
+            @if($activeSuratMasuk)
+                <div class="row g-4 mb-4">
+                    <div class="col-12 col-lg-5">
+                        <div class="surface-card h-100 d-flex flex-column">
+                            <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
+                                        <i class="bi bi-envelope-open-fill" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Detail Agenda Surat Masuk (#{{ $activeSuratMasuk->nomor_urut_agenda }})</h6>
+                                        <div class="text-secondary" style="font-size: 0.73rem;">Registrasi Buku Agenda &amp; Pelacakan Ajudan</div>
+                                    </div>
+                                </div>
+                                <span class="badge rounded-2 px-2 py-1 fw-semibold doc-number-mono" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.73rem;">
+                                    #{{ $activeSuratMasuk->nomor_urut_agenda }}
+                                </span>
+                            </div>
+
+                            <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
+                                            <div class="p-2 px-3 rounded-2 border" style="background-color: var(--color-slate-50);">
+                                                <div class="text-secondary" style="font-size: 0.72rem;">Nomor Urut Agenda</div>
+                                                <div class="fw-bold text-dark doc-number-mono fs-6">#{{ $activeSuratMasuk->nomor_urut_agenda }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-2 px-3 rounded-2 border" style="background-color: var(--color-slate-50);">
+                                                <div class="text-secondary" style="font-size: 0.72rem;">Tanggal Diterima Disdukcapil</div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ $activeSuratMasuk->tanggal_diterima?->format('d M Y') ?? '-' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3 pb-3 border-bottom d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div class="text-secondary mb-1" style="font-size: 0.74rem;">Pengirim Surat</div>
+                                            <div class="fw-bold text-dark" style="font-size: 0.9rem;">{{ $activeSuratMasuk->pengirim }}</div>
+                                        </div>
+                                        <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger fw-semibold px-2 py-1" style="font-size: 0.7rem;">
+                                            Sifat: {{ $activeSuratMasuk->sifat_surat }}
+                                        </span>
+                                    </div>
+
+                                    <div class="row g-3 mb-3 pb-3 border-bottom">
+                                        <div class="col-5">
+                                            <div class="text-secondary mb-1" style="font-size: 0.74rem;">Tanggal Surat</div>
+                                            <div class="fw-semibold text-dark" style="font-size: 0.84rem;">{{ $activeSuratMasuk->tanggal_surat?->format('d M Y') ?? '-' }}</div>
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="text-secondary mb-1" style="font-size: 0.74rem;">Keterangan Nomor Surat</div>
+                                            <div class="doc-number-mono text-primary">{{ $activeSuratMasuk->nomor_surat }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="text-secondary mb-1" style="font-size: 0.74rem;">Perihal Surat</div>
+                                        <div class="p-3 rounded-2 border text-dark fw-medium" style="background-color: var(--color-slate-50); font-size: 0.84rem; line-height: 1.5;">
+                                            {{ $activeSuratMasuk->perihal }}
+                                        </div>
+                                    </div>
+
+                                    <div class="ajudan-tracking-box p-3 mb-4">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <span class="fw-bold text-success d-flex align-items-center gap-1" style="font-size: 0.76rem;">
+                                                <i class="bi bi-arrow-up-right-circle-fill" aria-hidden="true"></i> Pelacakan Kenaikan Surat ke Kadin
+                                            </span>
+                                            <span class="badge rounded-pill bg-success text-white fw-medium px-2 py-1" style="font-size: 0.69rem;">
+                                                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Diterima Ajudan Kadin
+                                            </span>
+                                        </div>
+                                        <div class="row g-2 pt-1" style="font-size: 0.78rem;">
+                                            <div class="col-12 col-sm-6">
+                                                <div class="text-secondary" style="font-size: 0.71rem;">Tanggal Naik ke Kadin</div>
+                                                <div class="fw-semibold text-dark doc-number-mono">
+                                                    <i class="bi bi-clock me-1 text-success" aria-hidden="true"></i>{{ $activeSuratMasuk->tanggal_naik_kadin ? $activeSuratMasuk->tanggal_naik_kadin->format('d M Y, H:i') . ' WIB' : '-' }}
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <div class="text-secondary" style="font-size: 0.71rem;">Nama Ajudan Penerima</div>
+                                                <div class="fw-semibold text-dark">
+                                                    <i class="bi bi-person-check-fill me-1 text-success" aria-hidden="true"></i>{{ $activeSuratMasuk->nama_ajudan_penerima ?? 'Rizky Pratama, S.IP' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid no-print">
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#modalLampiranPdf" class="btn btn-outline-primary btn-sm fw-semibold py-2 rounded-2 d-flex align-items-center justify-content-center gap-2" style="font-size: 0.84rem;">
+                                        <i class="bi bi-file-earmark-pdf-fill text-danger" aria-hidden="true"></i>
+                                        <span>Lihat Lampiran PDF Surat Masuk</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-7">
+                        <div class="surface-card h-100 d-flex flex-column">
+                            <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
+                                        <i class="bi bi-send-check-fill" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Form Instruksi Disposisi Kadin &amp; Penyerahan</h6>
+                                        <div class="text-secondary" style="font-size: 0.73rem;">Penentuan bidang penerima (400, 800, 00), tanggal terima, dan arahan Kepala Dinas</div>
+                                    </div>
+                                </div>
+                                @if($activeDisp)
+                                    <span class="badge rounded-pill fw-semibold px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.71rem;">
+                                        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>Telah Didisposisi ({{ strtoupper($activeDisp->status_disposisi) }})
+                                    </span>
+                                @else
+                                    <span class="badge rounded-pill fw-semibold px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.71rem;">
+                                        <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Menunggu Disposisi
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="p-4 flex-grow-1">
+                                <form action="{{ route('kadin.disposisi.store', $activeSuratMasuk->id) }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="kode_bidang" id="inputKodeBidangDisposisi" value="{{ old('kode_bidang', $activeKodeBidang) }}">
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold text-dark small mb-2">
+                                            Diteruskan ke Bidang / Subbagian (Kode Klasifikasi) <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="row g-2" id="unitCardsContainer">
+                                            <div class="col-12 col-md-4">
+                                                <label class="unit-option-card {{ $activeKodeBidang === '400' ? 'selected' : '' }} d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, '400', 'Drs. H. M. Amin, M.Si (Kabid PIAK & Capil)')">
+                                                    <input class="form-check-input mt-1" type="radio" name="diserahkan_kepada_unit" value="Bidang Catatan Sipil (Kode 400)" {{ $activeKodeBidang === '400' ? 'checked' : '' }}>
+                                                    <div>
+                                                        <div class="fw-bold text-dark" style="font-size: 0.79rem;">Bidang Catatan Sipil</div>
+                                                        <span class="badge bg-primary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 400</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="unit-option-card {{ $activeKodeBidang === '800' ? 'selected' : '' }} d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, '800', 'Hj. Siti Rahmawati, S.Sos., M.Si (Kasubbag Umpeg)')">
+                                                    <input class="form-check-input mt-1" type="radio" name="diserahkan_kepada_unit" value="Subbag Kepegawaian & Umum (Kode 800)" {{ $activeKodeBidang === '800' ? 'checked' : '' }}>
+                                                    <div>
+                                                        <div class="fw-bold text-dark" style="font-size: 0.79rem;">Subbag Kepegawaian &amp; Umum</div>
+                                                        <span class="badge bg-secondary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 800</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <label class="unit-option-card {{ $activeKodeBidang === '00' ? 'selected' : '' }} d-flex align-items-start gap-2 w-100" style="cursor: pointer;" onclick="selectUnitDisposisi(this, '00', 'Hendri Wijaya, S.E., Ak (Kasubbag Keuangan)')">
+                                                    <input class="form-check-input mt-1" type="radio" name="diserahkan_kepada_unit" value="Subbag Keuangan (Kode 00)" {{ $activeKodeBidang === '00' ? 'checked' : '' }}>
+                                                    <div>
+                                                        <div class="fw-bold text-dark" style="font-size: 0.79rem;">Subbag Keuangan</div>
+                                                        <span class="badge bg-secondary text-white mt-1 doc-number-mono" style="font-size: 0.68rem;">Kode 00</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-12 col-md-5">
+                                            <label for="pegawaiPenerima" class="form-label fw-semibold text-dark small mb-1">
+                                                Nama Penerima Disposisi <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-vcard" aria-hidden="true"></i></span>
+                                                <input type="text" name="nama_pegawai_penerima" id="pegawaiPenerima" class="form-control" value="{{ old('nama_pegawai_penerima', $selectedPenerimaValue) }}" placeholder="Masukkan nama pejabat / staf penerima..." required>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label for="tanggalMenerima" class="form-label fw-semibold text-dark small mb-1">
+                                                Tanggal Terima <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light text-secondary"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
+                                                <input type="date" name="tanggal_menerima" id="tanggalMenerima" class="form-control" value="{{ old('tanggal_menerima', $selectedTanggalTerima) }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-md-3">
+                                            <label for="statusDisposisiSelect" class="form-label fw-semibold text-dark small mb-1">
+                                                Status Tindak Lanjut
+                                            </label>
+                                            <select name="status_disposisi" id="statusDisposisiSelect" class="form-select form-select-sm fw-medium">
+                                                <option value="diproses" {{ $selectedStatusDisp === 'diproses' ? 'selected' : '' }}>Diproses Unit</option>
+                                                <option value="selesai" {{ $selectedStatusDisp === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                                <option value="diarsipkan" {{ $selectedStatusDisp === 'diarsipkan' ? 'selected' : '' }}>Diarsipkan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-12 col-md-5">
+                                            <label class="form-label fw-semibold text-dark small mb-2">
+                                                Sifat Disposisi <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach(['Segera', 'Penting', 'Rahasia', 'Biasa'] as $sifatOpt)
+                                                    <div class="form-check form-check-inline m-0 border rounded-2 px-2 py-1 bg-light">
+                                                        <input class="form-check-input" type="radio" name="sifat_disposisi" id="sifat{{ $sifatOpt }}" value="{{ $sifatOpt }}" {{ $selectedSifat === $sifatOpt ? 'checked' : '' }}>
+                                                        <label class="form-check-label {{ $sifatOpt === 'Segera' ? 'fw-semibold text-danger' : 'fw-medium text-dark' }}" for="sifat{{ $sifatOpt }}" style="font-size: 0.77rem;">{{ $sifatOpt }}</label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-7">
+                                            <label class="form-label fw-semibold text-dark small mb-2">
+                                                Instruksi Cepat Pimpinan
+                                            </label>
+                                            <div class="row g-2">
+                                                @foreach(['Tindak Lanjuti', 'Siapkan Konsep Balasan', 'Koordinasikan', 'Arsipkan'] as $idxInst => $instOpt)
+                                                    <div class="col-6">
+                                                        <div class="form-check border rounded-2 px-3 py-1 bg-light">
+                                                            <input class="form-check-input" type="checkbox" name="instruksi_cepat[]" value="{{ $instOpt }}" id="inst{{ $idxInst }}" {{ in_array($instOpt, $selectedInstruksi, true) ? 'checked' : '' }}>
+                                                            <label class="form-check-label fw-medium text-dark" for="inst{{ $idxInst }}" style="font-size: 0.77rem;">{{ $instOpt }}</label>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="catatanKadin" class="form-label fw-semibold text-dark small mb-1">
+                                            Catatan / Instruksi Khusus Kepala Dinas
+                                        </label>
+                                        <textarea name="catatan_kadin" id="catatanKadin" class="form-control form-control-sm" rows="3" style="font-size: 0.83rem;" placeholder="Tuliskan arahan spesifik Kepala Dinas kepada unit penerima...">{{ old('catatan_kadin', $selectedCatatan) }}</textarea>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 pt-3 border-top no-print">
+                                        <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-2" style="font-size: 0.82rem;">
+                                            <i class="bi bi-printer" aria-hidden="true"></i>
+                                            <span>Cetak Lembar Disposisi</span>
+                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-sm fw-semibold px-4 py-2 rounded-2 d-inline-flex align-items-center gap-2 shadow-sm" style="font-size: 0.82rem;">
+                                            <i class="bi bi-send-fill" aria-hidden="true"></i>
+                                            <span>{{ $activeDisp ? 'Perbarui Instruksi Disposisi' : 'Kirim Instruksi Disposisi' }}</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <div class="surface-card overflow-hidden no-print">
                 <div class="p-3 px-4 border-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                     <div>
-                        <h6 class="fw-bold text-dark mb-1">Riwayat Disposisi Surat Masuk</h6>
+                        <h6 class="fw-bold text-dark mb-1">Riwayat Disposisi Surat Masuk ({{ $riwayatDisposisiList->count() }} Tercatat)</h6>
                         <div class="text-secondary" style="font-size: 0.76rem;">Rekam jejak kenaikan surat melalui ajudan dan penyerahan disposisi ke bidang/subbagian terkait.</div>
                     </div>
                     <a href="/buku-besar" class="btn btn-sm btn-outline-primary rounded-2 px-3 py-1 fw-medium" style="font-size: 0.75rem;">
@@ -641,116 +665,102 @@
                         <thead>
                             <tr>
                                 <th class="ps-4" style="width: 95px;">NO. URUT</th>
-                                <th style="width: 260px;">PENGIRIM &amp; NO. SURAT</th>
-                                <th style="width: 235px;">TANGGAL NAIK &amp; NAMA AJUDAN</th>
-                                <th>DISERAHKAN KEPADA (NAMA &amp; TANGGAL TERIMA)</th>
-                                <th class="pe-4 text-end" style="width: 180px;">STATUS DISPOSISI</th>
+                                <th style="width: 245px;">PENGIRIM &amp; NO. SURAT</th>
+                                <th style="width: 215px;">TANGGAL NAIK &amp; NAMA AJUDAN</th>
+                                <th>DISERAHKAN KEPADA &amp; INSTRUKSI KADIN</th>
+                                <th style="width: 155px;">STATUS DISPOSISI</th>
+                                <th class="pe-4 text-end" style="width: 175px;">TINDAK LANJUT</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#0142</span>
-                                    <div class="text-secondary" style="font-size: 0.72rem;">09 Nov 2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Sekretariat Daerah Kab. OKI</div>
-                                    <div class="doc-number-mono text-primary mt-1">005/341/Setda-OKI/2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-medium text-dark doc-number-mono" style="font-size: 0.76rem;">10 Nov 2026, 08:15 WIB</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.74rem;"><i class="bi bi-person-check text-success me-1" aria-hidden="true"></i>Ajudan: Rizky Pratama, S.IP</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold mb-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
-                                        Bidang Catatan Sipil (Kode 400)
-                                    </span>
-                                    <div class="text-secondary" style="font-size: 0.74rem;">Penerima: Drs. H. M. Amin, M.Si &bull; 10 Nov 2026</div>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
-                                        <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Sedang Diproses
-                                    </span>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#0141</span>
-                                    <div class="text-secondary" style="font-size: 0.72rem;">08 Nov 2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">BKPSDM Kabupaten OKI</div>
-                                    <div class="doc-number-mono text-primary mt-1">800/512/BKPSDM-II/2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-medium text-dark doc-number-mono" style="font-size: 0.76rem;">08 Nov 2026, 13:40 WIB</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.74rem;"><i class="bi bi-person-check text-success me-1" aria-hidden="true"></i>Ajudan: Rizky Pratama, S.IP</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold mb-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.7rem;">
-                                        Subbag Kepegawaian &amp; Umum (Kode 800)
-                                    </span>
-                                    <div class="text-secondary" style="font-size: 0.74rem;">Penerima: Hj. Siti Rahmawati, S.Sos &bull; 09 Nov 2026</div>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Selesai Ditindaklanjuti
-                                    </span>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#0140</span>
-                                    <div class="text-secondary" style="font-size: 0.72rem;">07 Nov 2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Badan Pengelola Keuangan &amp; Aset Daerah</div>
-                                    <div class="doc-number-mono text-primary mt-1">900/219/BPKAD-OKI/2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-medium text-dark doc-number-mono" style="font-size: 0.76rem;">07 Nov 2026, 10:20 WIB</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.74rem;"><i class="bi bi-person-check text-success me-1" aria-hidden="true"></i>Ajudan: Dedi Kurniawan, A.Md</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold mb-1" style="background-color: #F3F4F6; color: #374151; border: 1px solid #E5E7EB; font-size: 0.7rem;">
-                                        Subbag Keuangan (Kode 00)
-                                    </span>
-                                    <div class="text-secondary" style="font-size: 0.74rem;">Penerima: Hendri Wijaya, S.E., Ak &bull; 07 Nov 2026</div>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Selesai Ditindaklanjuti
-                                    </span>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#0139</span>
-                                    <div class="text-secondary" style="font-size: 0.72rem;">06 Nov 2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Pengadilan Agama Kayuagung</div>
-                                    <div class="doc-number-mono text-primary mt-1">W6-A4/892/HK.05/XI/2026</div>
-                                </td>
-                                <td>
-                                    <div class="fw-medium text-dark doc-number-mono" style="font-size: 0.76rem;">06 Nov 2026, 14:05 WIB</div>
-                                    <div class="text-secondary mt-1" style="font-size: 0.74rem;"><i class="bi bi-person-check text-success me-1" aria-hidden="true"></i>Ajudan: Dedi Kurniawan, A.Md</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold mb-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.7rem;">
-                                        Bidang Catatan Sipil (Kode 400)
-                                    </span>
-                                    <div class="text-secondary" style="font-size: 0.74rem;">Penerima: Dewi Sartika, S.H. &bull; 06 Nov 2026</div>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-archive me-1" aria-hidden="true"></i>Diarsipkan Unit
-                                    </span>
-                                </td>
-                            </tr>
+                            @forelse($riwayatDisposisiList as $dispRow)
+                                @php
+                                    $sm = $dispRow->suratMasuk;
+                                    $kodeBid = $dispRow->kodeKlasifikasi->kode_bidang ?? '400';
+                                    $unitBadgeStyle = match($kodeBid) {
+                                        '800' => 'background-color: #FEF3C7; color: #B45309;',
+                                        '00' => 'background-color: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;',
+                                        default => 'background-color: #DBEAFE; color: #1D4ED8;',
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="fw-bold text-dark font-monospace">#{{ $sm->nomor_urut_agenda ?? '-' }}</span>
+                                        <div class="text-secondary" style="font-size: 0.72rem;">{{ $sm?->tanggal_diterima?->format('d M Y') ?? '-' }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ $sm->pengirim ?? '-' }}</div>
+                                        <div class="doc-number-mono text-primary mt-1">{{ $sm->nomor_surat ?? '-' }}</div>
+                                        <div class="text-secondary small mt-1">{{ \Illuminate\Support\Str::limit($sm->perihal ?? '-', 55) }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium text-dark doc-number-mono" style="font-size: 0.76rem;">
+                                            {{ $sm?->tanggal_naik_kadin ? $sm->tanggal_naik_kadin->format('d M Y, H:i') . ' WIB' : '-' }}
+                                        </div>
+                                        <div class="text-secondary mt-1" style="font-size: 0.74rem;">
+                                            <i class="bi bi-person-check text-success me-1" aria-hidden="true"></i>Ajudan: {{ $sm->nama_ajudan_penerima ?? 'Rizky Pratama, S.IP' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-2 px-2 py-1 fw-semibold mb-1" style="{{ $unitBadgeStyle }} font-size: 0.7rem;">
+                                            {{ $dispRow->diserahkan_kepada_unit }}
+                                        </span>
+                                        <div class="text-dark fw-medium" style="font-size: 0.75rem;">
+                                            Penerima: {{ $dispRow->nama_pegawai_penerima }} &bull; {{ $dispRow->tanggal_menerima?->format('d M Y') }}
+                                        </div>
+                                        @if(!empty($dispRow->instruksi_cepat))
+                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                @foreach((array) $dispRow->instruksi_cepat as $instTag)
+                                                    <span class="badge bg-light text-secondary border fw-normal" style="font-size: 0.65rem;">{{ $instTag }}</span>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        @if($dispRow->catatan_kadin)
+                                            <div class="text-secondary fst-italic mt-1" style="font-size: 0.72rem;">
+                                                "{{ \Illuminate\Support\Str::limit($dispRow->catatan_kadin, 85) }}"
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($dispRow->status_disposisi === 'selesai')
+                                            <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
+                                                <i class="bi bi-check-circle me-1" aria-hidden="true"></i>Selesai Ditindaklanjuti
+                                            </span>
+                                        @elseif($dispRow->status_disposisi === 'diarsipkan')
+                                            <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
+                                                <i class="bi bi-archive me-1" aria-hidden="true"></i>Diarsipkan Unit
+                                            </span>
+                                        @else
+                                            <span class="badge rounded-pill fw-medium px-3 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
+                                                <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Sedang Diproses
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            @if($dispRow->status_disposisi === 'diproses')
+                                                <form action="{{ route('kadin.disposisi.status', $dispRow->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status_disposisi" value="selesai">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 0.71rem;" title="Tandai Selesai Ditindaklanjuti">
+                                                        <i class="bi bi-check2"></i> Selesai
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            @if($sm)
+                                                <a href="{{ route('kadin.disposisi', ['surat_masuk_id' => $sm->id]) }}" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.71rem;">
+                                                    <i class="bi bi-printer me-1"></i>Detail
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-secondary">Belum ada riwayat disposisi surat masuk.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -764,23 +774,45 @@
     </div>
 </div>
 
+{{-- MODAL 1: PRATINJAU LAMPIRAN PDF SURAT MASUK --}}
 <div class="modal fade" id="modalLampiranPdf" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
             <div class="modal-header border-bottom px-4 py-3">
                 <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
                     <i class="bi bi-file-earmark-pdf-fill text-danger" aria-hidden="true"></i>
-                    <span>Pratinjau Lampiran PDF Surat Masuk (#0142)</span>
+                    <span>Pratinjau Lampiran PDF Surat Masuk (#{{ $activeSuratMasuk->nomor_urut_agenda ?? '-' }})</span>
                 </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4 bg-light small">
-                <div class="bg-white border rounded-2 p-4 shadow-sm">
-                    <div class="fw-bold text-dark mb-1">SEKRETARIAT DAERAH KABUPATEN OGAN KOMERING ILIR</div>
-                    <div class="doc-number-mono text-primary mb-3">Nomor: 005/341/Setda-OKI/2026 &bull; Tanggal: 06 November 2026</div>
-                    <p class="text-secondary mb-0">Perihal: Permintaan Data Agregat Kependudukan Bersih (DAK2) Semester II Tahun 2026 sebagai dasar perhitungan alokasi pelayanan publik tingkat kecamatan dan desa di Kabupaten Ogan Komering Ilir.</p>
+                <div class="d-flex align-items-center gap-2">
+                    @if(!empty($activeSuratMasuk?->file_lampiran))
+                        <a href="{{ asset('storage/' . $activeSuratMasuk->file_lampiran) }}" target="_blank" class="btn btn-sm btn-primary fw-semibold">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Buka Berkas Asli di Tab Baru
+                        </a>
+                    @endif
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
             </div>
+            @if(!empty($activeSuratMasuk?->file_lampiran))
+                <div class="modal-body p-0 bg-light" style="height: 70vh;">
+                    <iframe src="{{ asset('storage/' . $activeSuratMasuk->file_lampiran) }}" class="w-100 h-100 border-0" title="Lampiran Surat Masuk"></iframe>
+                </div>
+            @else
+                <div class="modal-body p-4 bg-light small">
+                    <div class="bg-white border rounded-2 p-4 shadow-sm">
+                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                            <div>
+                                <div class="fw-bold text-dark">{{ strtoupper($activeSuratMasuk->pengirim ?? '-') }}</div>
+                                <div class="doc-number-mono text-primary">Nomor: {{ $activeSuratMasuk->nomor_surat ?? '-' }} &bull; Tanggal Surat: {{ $activeSuratMasuk?->tanggal_surat?->format('d F Y') ?? '-' }}</div>
+                            </div>
+                            <span class="badge bg-secondary">Ringkasan Digital Buku Agenda</span>
+                        </div>
+                        <p class="text-dark fw-medium mb-2">Perihal: {{ $activeSuratMasuk->perihal ?? '-' }}</p>
+                        <p class="text-secondary mb-0">
+                            Agenda Surat Masuk <strong>#{{ $activeSuratMasuk->nomor_urut_agenda ?? '-' }}</strong> diterima pada {{ $activeSuratMasuk?->tanggal_diterima?->format('d F Y') ?? '-' }} dengan sifat <strong>{{ $activeSuratMasuk->sifat_surat ?? 'Biasa' }}</strong> dan diteruskan ke meja Kepala Dinas melalui Ajudan ({{ $activeSuratMasuk->nama_ajudan_penerima ?? 'Rizky Pratama, S.IP' }}).
+                        </p>
+                    </div>
+                </div>
+            @endif
             <div class="modal-footer border-top px-4 py-2">
                 <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Tutup Pratinjau</button>
             </div>
@@ -788,59 +820,45 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalDisposisiSukses" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-success d-flex align-items-center gap-2">
-                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                    <span>Instruksi Disposisi Berhasil Dikirim</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4 small">
-                <p class="text-secondary mb-2">Instruksi disposisi Kepala Dinas untuk Surat Masuk <strong>#0142</strong> telah diserahkan kepada:</p>
-                <div class="p-3 rounded-2 bg-light border mb-0">
-                    <div class="fw-bold text-primary" id="modalDisposisiPenerima">Drs. H. M. Amin, M.Si</div>
-                    <div class="text-secondary mt-1">Tercatat pada Buku Kendali Disposisi &amp; Buku Besar Persuratan.</div>
-                </div>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
-                <a href="/buku-besar" class="btn btn-sm btn-primary fw-semibold">Lihat di Buku Besar Persuratan &rarr;</a>
-            </div>
-        </div>
-    </div>
-</div>
-
+{{-- MODAL 2: PENGATURAN PIN / PASSPHRASE TTE MANDIRI (ZERO-KNOWLEDGE ADMIN) --}}
 <div class="modal fade" id="modalPinTte" tabindex="-1" aria-labelledby="modalPinTteLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalPinTteLabel">
-                    <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                    <span>Panel Keamanan PIN / Passphrase TTE Kadin</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="p-3 rounded-2 mb-3 border" style="background-color: #ECFDF5; border-color: #A7F3D0 !important; font-size: 0.78rem;">
-                    <strong class="text-success d-block mb-1"><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Sertifikat Elektronik BSrE Aktif</strong>
-                    <span class="text-secondary">Otorisator: <strong>{{ $userName }}</strong> (NIP. {{ $userNip }})</span>
+            <form action="{{ route('kadin.pin-tte.update') }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalPinTteLabel">
+                        <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
+                        <span>Panel Keamanan PIN / Passphrase TTE Kadin</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small text-dark mb-1">Passphrase / PIN TTE Saat Ini</label>
-                    <input type="password" class="form-control form-control-sm" value="••••••••••••">
+                <div class="modal-body p-4">
+                    <div class="p-3 rounded-2 mb-3 border" style="background-color: #ECFDF5; border-color: #A7F3D0 !important; font-size: 0.78rem;">
+                        <strong class="text-success d-block mb-1"><i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Sertifikat Elektronik BSrE Aktif (Zero-Knowledge Admin)</strong>
+                        <span class="text-secondary">Otorisator: <strong>{{ $userName }}</strong> (NIP. {{ $userNip }})</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">Verifikasi PIN TTE Saat Ini / Kata Sandi Akun <span class="text-danger">*</span></label>
+                        <input type="password" name="kredensial_verifikasi" class="form-control form-control-sm" placeholder="Masukkan PIN TTE lama atau Password login Anda..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">PIN TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Contoh: 123456" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold small text-dark mb-1">Konfirmasi PIN TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru_confirmation" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Ketik ulang 6 digit PIN TTE baru..." required>
+                    </div>
                 </div>
-                <div class="mb-0">
-                    <label class="form-label fw-semibold small text-dark mb-1">Passphrase / PIN TTE Baru</label>
-                    <input type="password" class="form-control form-control-sm" placeholder="Minimal 8 karakter kombinasi huruf &amp; angka...">
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-sm btn-primary fw-semibold">
+                        <i class="bi bi-key-fill me-1"></i>Simpan Perubahan PIN TTE
+                    </button>
                 </div>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan PIN</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -849,17 +867,13 @@
 <script>
     localStorage.removeItem('esurat_locked_role');
 
-    function selectUnitDisposisi(cardEl, defaultRecipient) {
+    function selectUnitDisposisi(cardEl, kodeBidang, defaultRecipient) {
         document.querySelectorAll('#unitCardsContainer .unit-option-card').forEach(function(el) {
             el.classList.remove('selected');
         });
         cardEl.classList.add('selected');
+        document.getElementById('inputKodeBidangDisposisi').value = kodeBidang;
         document.getElementById('pegawaiPenerima').value = defaultRecipient;
-    }
-
-    function submitDisposisiForm() {
-        document.getElementById('modalDisposisiPenerima').textContent = 'Penerima: ' + document.getElementById('pegawaiPenerima').value;
-        new bootstrap.Modal(document.getElementById('modalDisposisiSukses')).show();
     }
 </script>
 </body>

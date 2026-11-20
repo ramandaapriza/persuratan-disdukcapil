@@ -174,6 +174,10 @@
         + \App\Models\Sppd::where('status', 'revisi')->count()
         + \App\Models\BeritaAcara::where('status', 'revisi')->count()
     ) : 0;
+
+    $kadinCounters = $userRole === 'kadin'
+        ? \App\Http\Controllers\KadinController::getSidebarCounters()
+        : ['menungguTteCount' => 0, 'menungguDisposisiCount' => 0];
 @endphp
 
 <div class="d-flex">
@@ -284,14 +288,14 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $kadinCounters['menungguTteCount'] }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">2</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $kadinCounters['menungguDisposisiCount'] }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -802,31 +806,39 @@
 <div class="modal fade" id="modalPinTte" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
-                    <span>Pengaturan PIN / Passphrase TTE Kepala Dinas</span>
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="p-3 rounded-2 mb-3 border" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.78rem;">
-                    <strong class="text-primary d-block mb-1">Otorisator TTE: {{ $userName }}</strong>
-                    <span class="text-secondary">{{ $userJabatan }} &bull; NIP {{ $userNip }}</span>
+            <form action="{{ route('kadin.pin-tte.update') }}" method="POST">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i>
+                        <span>Pengaturan PIN / Passphrase TTE Kepala Dinas</span>
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small text-dark mb-1">PIN / Passphrase TTE Saat Ini</label>
-                    <input type="password" class="form-control form-control-sm" value="••••••••••••">
+                <div class="modal-body p-4">
+                    <div class="p-3 rounded-2 mb-3 border" style="background-color: #EFF6FF; border-color: #BFDBFE !important; font-size: 0.78rem;">
+                        <strong class="text-primary d-block mb-1">Otorisator TTE: {{ $userName }}</strong>
+                        <span class="text-secondary">{{ $userJabatan }} &bull; NIP {{ $userNip }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">Verifikasi PIN TTE Saat Ini / Kata Sandi Akun <span class="text-danger">*</span></label>
+                        <input type="password" name="kredensial_verifikasi" class="form-control form-control-sm" placeholder="Masukkan PIN TTE lama atau Password login Anda..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-dark mb-1">PIN / Passphrase TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Contoh: 123456" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold small text-dark mb-1">Konfirmasi PIN / Passphrase TTE Baru (6 Digit Angka) <span class="text-danger">*</span></label>
+                        <input type="password" name="pin_tte_baru_confirmation" maxlength="6" pattern="\d{6}" inputmode="numeric" class="form-control form-control-sm doc-number-mono" placeholder="Ketik ulang 6 digit PIN baru..." required>
+                    </div>
                 </div>
-                <div class="mb-0">
-                    <label class="form-label fw-semibold small text-dark mb-1">PIN / Passphrase TTE Baru (6 Digit)</label>
-                    <input type="password" class="form-control form-control-sm" placeholder="Masukkan 6 digit PIN baru...">
+                <div class="modal-footer border-top px-4 py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-sm btn-primary fw-semibold">Simpan Perubahan PIN TTE</button>
                 </div>
-            </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-sm btn-primary fw-semibold" data-bs-dismiss="modal">Simpan Perubahan PIN</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>

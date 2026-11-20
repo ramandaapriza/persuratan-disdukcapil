@@ -617,5 +617,138 @@ class DatabaseSeeder extends Seeder
                 'waktu_verifikasi' => '2026-11-16 13:15:00',
             ],
         ]);
+
+        // 10. Seed Antrean Aktif Tahap 3 (status = 'valid_sekdin' — Menunggu Otorisasi TTE Kepala Dinas) & Surat Masuk Siap Disposisi
+        LogVerifikasi::where('naskah_type', SuratKeluar::class)->where('naskah_id', $sk2762->id)->delete();
+        $sk2762->logVerifikasi()->createMany([
+            [
+                'tahap_verifikasi' => 'staf_admin',
+                'status_aksi' => 'diajukan',
+                'verifikator_id' => $admin->id,
+                'catatan' => 'Konsep Surat Keluar 00/2762/disdukcapil/2026 diajukan.',
+                'waktu_verifikasi' => '2026-11-09 08:30:00',
+            ],
+            [
+                'tahap_verifikasi' => 'kasubbag_umpeg',
+                'status_aksi' => 'valid_kasubbag',
+                'verifikator_id' => $kasubbag->id,
+                'catatan' => 'Berkas SPP-GU kode klasifikasi 00 lengkap dan sesuai.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-09 09:40:00',
+            ],
+            [
+                'tahap_verifikasi' => 'sekretaris_dinas',
+                'status_aksi' => 'valid_sekdin',
+                'verifikator_id' => $sekdin->id,
+                'catatan' => 'Telah diparaf koordinasi oleh Sekretaris Dinas, diteruskan ke Kepala Dinas untuk TTE.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-09 11:00:00',
+            ],
+        ]);
+
+        $sppd094ValidSekdin = Sppd::updateOrCreate(
+            ['nomor_sppd' => '090/094/SPPD/DUKCAPIL/2026'],
+            [
+                'nomor_urut' => 94,
+                'kode_klasifikasi_id' => $bidang800->id,
+                'tanggal_surat' => '2026-11-16',
+                'pegawai_id' => $sekdin->id,
+                'nama_pegawai' => 'Ir. H. Bambang Irawan, M.M',
+                'nip_pegawai' => '197405212000031002',
+                'jabatan_pegawai' => 'Sekretaris Dinas (Sekdin)',
+                'tanggal_berangkat' => '2026-11-26',
+                'tanggal_kembali' => '2026-11-28',
+                'daerah_tujuan' => 'Ditjen Dukcapil Kemendagri RI - Jakarta',
+                'urusan_perjalanan' => 'Koordinasi Nasional Evaluasi Capaian Perekaman KTP-el dan Percepatan Aktivasi IKD Kabupaten/Kota Tahun 2026.',
+                'status' => 'valid_sekdin',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', Sppd::class)->where('naskah_id', $sppd094ValidSekdin->id)->delete();
+        $sppd094ValidSekdin->logVerifikasi()->createMany([
+            [
+                'tahap_verifikasi' => 'staf_admin',
+                'status_aksi' => 'diajukan',
+                'verifikator_id' => $admin->id,
+                'catatan' => 'Konsep SPPD 090/094/SPPD/DUKCAPIL/2026 diajukan.',
+                'waktu_verifikasi' => '2026-11-16 08:20:00',
+            ],
+            [
+                'tahap_verifikasi' => 'kasubbag_umpeg',
+                'status_aksi' => 'valid_kasubbag',
+                'verifikator_id' => $kasubbag->id,
+                'catatan' => 'Telah diverifikasi Kasubbag Umpeg.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 09:30:00',
+            ],
+            [
+                'tahap_verifikasi' => 'sekretaris_dinas',
+                'status_aksi' => 'valid_sekdin',
+                'verifikator_id' => $sekdin->id,
+                'catatan' => 'Diparaf dan diteruskan ke Kepala Dinas untuk otorisasi TTE.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 10:45:00',
+            ],
+        ]);
+
+        $ba031ValidSekdin = BeritaAcara::updateOrCreate(
+            ['nomor_berita_acara' => '400/031/BA-SIAK/XI/2026'],
+            [
+                'nomor_urut' => 31,
+                'kode_klasifikasi_id' => $bidang400->id,
+                'tanggal_berita_acara' => '2026-11-16',
+                'pihak_kedua' => 'Dinas Sosial Kabupaten Ogan Komering Ilir',
+                'perihal' => 'Berita Acara Padanan Data Tunggal Kesejahteraan Sosial (DTKS) dengan NIK SIAK Terpusat Semester II Tahun 2026',
+                'status' => 'valid_sekdin',
+                'catatan_revisi' => null,
+                'created_by' => $admin->id,
+            ]
+        );
+        LogVerifikasi::where('naskah_type', BeritaAcara::class)->where('naskah_id', $ba031ValidSekdin->id)->delete();
+        $ba031ValidSekdin->logVerifikasi()->createMany([
+            [
+                'tahap_verifikasi' => 'staf_admin',
+                'status_aksi' => 'diajukan',
+                'verifikator_id' => $admin->id,
+                'catatan' => 'Konsep Berita Acara 400/031/BA-SIAK/XI/2026 diajukan.',
+                'waktu_verifikasi' => '2026-11-16 08:50:00',
+            ],
+            [
+                'tahap_verifikasi' => 'kasubbag_umpeg',
+                'status_aksi' => 'valid_kasubbag',
+                'verifikator_id' => $kasubbag->id,
+                'catatan' => 'Redaksi Berita Acara DTKS sesuai standar TNDE.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 10:05:00',
+            ],
+            [
+                'tahap_verifikasi' => 'sekretaris_dinas',
+                'status_aksi' => 'valid_sekdin',
+                'verifikator_id' => $sekdin->id,
+                'catatan' => 'Diparaf koordinasi, siap ditandatangani secara elektronik oleh Kepala Dinas.',
+                'checklist_pemeriksaan' => ['kode_klasifikasi' => true, 'kelengkapan_lampiran' => true, 'ketepatan_redaksi' => true],
+                'waktu_verifikasi' => '2026-11-16 11:25:00',
+            ],
+        ]);
+
+        SuratMasuk::updateOrCreate(
+            ['nomor_urut_agenda' => '0145'],
+            [
+                'tanggal_diterima' => '2026-11-16',
+                'pengirim' => 'Inspektorat Daerah Kabupaten OKI',
+                'tanggal_surat' => '2026-11-15',
+                'nomor_surat' => '700/318/ITDA-OKI/XI/2026',
+                'perihal' => 'Jadwal Evaluasi Reformasi Birokrasi dan Zona Integritas Pelayanan Publik Disdukcapil OKI',
+                'sifat_surat' => 'Segera',
+                'kode_klasifikasi_id' => $bidang800->id,
+                'tanggal_naik_kadin' => '2026-11-16 10:15:00',
+                'ajudan_id' => $admin->id,
+                'nama_ajudan_penerima' => 'Rizky Pratama, S.IP',
+                'status_kenaikan' => 'diterima_ajudan',
+                'status' => 'diproses',
+                'created_by' => $admin->id,
+            ]
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KadinController;
 use App\Http\Controllers\RegistrasiNaskahController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerifikasiHierarkiController;
@@ -63,19 +64,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/verifikasi-hierarki/{jenis}/{id}/revisi', [VerifikasiHierarkiController::class, 'revisi'])->name('verifikasi.hierarki.revisi');
     });
 
-    // Rute khusus Kepala Dinas (Kadin)
+    // Rute khusus Kepala Dinas (Kadin: Dashboard Eksekutif, TTE Massal, Validasi TTE QR Code, PIN TTE, & Disposisi Surat Masuk)
     Route::middleware(['role:kadin'])->group(function () {
-        Route::get('/kadin', function () {
-            return view('dashboard-kadin');
-        })->name('dashboard.kadin');
+        Route::get('/kadin', [KadinController::class, 'dashboard'])->name('dashboard.kadin');
+        Route::post('/kadin/tte-massal', [KadinController::class, 'tteMassal'])->name('kadin.tte-massal');
 
-        Route::get('/kadin/validasi', function () {
-            return view('validasi-ttd');
-        })->name('kadin.validasi');
+        Route::get('/kadin/validasi', [KadinController::class, 'validasi'])->name('kadin.validasi');
+        Route::post('/kadin/validasi/{jenis}/{id}/tte', [KadinController::class, 'approveTte'])->name('kadin.validasi.tte');
+        Route::post('/kadin/validasi/{jenis}/{id}/revisi', [KadinController::class, 'revisiNaskah'])->name('kadin.validasi.revisi');
 
-        Route::get('/kadin/disposisi', function () {
-            return view('disposisi-masuk');
-        })->name('kadin.disposisi');
+        Route::get('/kadin/disposisi', [KadinController::class, 'disposisi'])->name('kadin.disposisi');
+        Route::post('/kadin/disposisi/{suratMasuk}', [KadinController::class, 'storeDisposisi'])->name('kadin.disposisi.store');
+        Route::patch('/kadin/disposisi/{disposisi}/status', [KadinController::class, 'updateStatusDisposisi'])->name('kadin.disposisi.status');
+
+        Route::patch('/kadin/pin-tte', [KadinController::class, 'updatePinTte'])->name('kadin.pin-tte.update');
     });
 
     // Rute bersama seluruh aktor internal terautentikasi (Admin, Kasubbag, Sekdin, Kadin)
