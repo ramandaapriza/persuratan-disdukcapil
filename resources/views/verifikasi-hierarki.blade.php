@@ -285,6 +285,12 @@
                         <span>Registrasi &amp; Agenda Naskah</span>
                     </span>
                 </a>
+                <a href="/riwayat-naskah" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <span>Riwayat &amp; Pantauan Naskah</span>
+                    </span>
+                </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
                 <a href="/buku-besar" class="nav-link-sidebar">

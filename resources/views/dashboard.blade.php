@@ -153,6 +153,12 @@
         'sekdin' => 'Otoritas: Sekdin (Verif II)',
         default => 'Otoritas: Staf Admin',
     };
+
+    $sidebarRevisiCount = isset($naskahRevisi) ? $naskahRevisi->count() : (
+        \App\Models\SuratKeluar::where('status', 'revisi')->count()
+        + \App\Models\Sppd::where('status', 'revisi')->count()
+        + \App\Models\BeritaAcara::where('status', 'revisi')->count()
+    );
 @endphp
 
 <div class="d-flex">
@@ -181,6 +187,15 @@
                         <i class="bi bi-send" aria-hidden="true"></i>
                         <span>Registrasi &amp; Agenda Naskah</span>
                     </span>
+                </a>
+                <a href="/riwayat-naskah" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <span>Riwayat &amp; Pantauan Naskah</span>
+                    </span>
+                    @if($sidebarRevisiCount > 0)
+                        <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
+                    @endif
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -378,6 +393,10 @@
                         <i class="bi bi-plus-circle-fill" aria-hidden="true"></i>
                         <span>Registrasi Surat</span>
                     </a>
+                    <a href="/riwayat-naskah" class="btn btn-outline-light btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1" style="border-color: rgba(255,255,255,0.35);">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <span>Riwayat &amp; Pantauan</span>
+                    </a>
                     <a href="/buku-besar" class="btn btn-outline-light btn-sm fw-medium px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1" style="border-color: rgba(255,255,255,0.35);">
                         <i class="bi bi-printer" aria-hidden="true"></i>
                         <span>Cetak Rekap</span>
@@ -404,7 +423,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <a href="/registrasi-surat#panel-surat-keluar" class="text-decoration-none">
+                    <a href="/riwayat-naskah?kategori=surat_keluar" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Surat Keluar</div>
@@ -421,7 +440,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <a href="/registrasi-surat#panel-sppd" class="text-decoration-none">
+                    <a href="/riwayat-naskah?kategori=sppd" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">SPPD &amp; Berita Acara</div>
@@ -438,7 +457,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <a href="/registrasi-surat#panel-revisi" class="text-decoration-none">
+                    <a href="/riwayat-naskah?status=revisi#panel-revisi" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Dalam Verifikasi &amp; Revisi</div>
@@ -464,8 +483,8 @@
                             </span>
                             <h6 class="fw-bold text-danger mb-0" style="font-size: 0.86rem;">Naskah Dinas Dikembalikan oleh Pejabat Verifikator untuk Diperbaiki</h6>
                         </div>
-                        <a href="/registrasi-surat#panel-revisi" class="btn btn-sm btn-danger fw-semibold px-3 py-1" style="font-size: 0.75rem;">
-                            <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Buka Panel Edit &amp; Revisi Naskah
+                        <a href="/riwayat-naskah?status=revisi#panel-revisi" class="btn btn-sm btn-danger fw-semibold px-3 py-1" style="font-size: 0.75rem;">
+                            <i class="bi bi-clock-history me-1" aria-hidden="true"></i>Buka Halaman Riwayat &amp; Revisi Naskah
                         </a>
                     </div>
                     <div class="table-responsive">
@@ -494,7 +513,7 @@
                                             </div>
                                         </td>
                                         <td class="pe-4 text-end">
-                                            <a href="/registrasi-surat#panel-revisi" class="btn btn-sm btn-primary fw-semibold py-1 px-2" style="font-size: 0.74rem;">
+                                            <a href="/riwayat-naskah?status=revisi&amp;open_edit={{ ($rev['jenis'] ?? 'surat_keluar') . '_' . ($rev['id'] ?? 1) }}#panel-revisi" class="btn btn-sm btn-primary fw-semibold py-1 px-2" style="font-size: 0.74rem;">
                                                 <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit &amp; Ajukan Ulang
                                             </a>
                                         </td>
@@ -581,7 +600,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <a href="/buku-besar" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.73rem;">Detail Agenda</a>
+                                            <a href="/riwayat-naskah?kategori=surat_masuk" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.73rem;">Detail Agenda</a>
                                         @endif
                                     </td>
                                 </tr>

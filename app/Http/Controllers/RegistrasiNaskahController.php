@@ -10,6 +10,7 @@ use App\Models\SuratMasuk;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -17,7 +18,7 @@ use Illuminate\View\View;
 class RegistrasiNaskahController extends Controller
 {
     /**
-     * Menampilkan halaman Registrasi & Penomoran Otomatis Naskah Dinas beserta daftar Revisi.
+     * Menampilkan halaman Formulir Input Registrasi & Penomoran Otomatis Naskah Dinas (/registrasi-surat).
      */
     public function index(): View
     {
@@ -31,90 +32,13 @@ class RegistrasiNaskahController extends Controller
         $maxAgendaMasuk = (int) SuratMasuk::query()->selectRaw('MAX(CAST(nomor_urut_agenda AS UNSIGNED)) as max_no')->value('max_no');
         $nextUrutSuratMasuk = str_pad((string) max($maxAgendaMasuk + 1, 145), 4, '0', STR_PAD_LEFT);
 
-        $suratKeluarList = SuratKeluar::query()
-            ->with(['kodeKlasifikasi', 'creator', 'logVerifikasi.verifikator'])
-            ->orderByRaw("CASE status WHEN 'revisi' THEN 1 WHEN 'draf' THEN 2 WHEN 'valid_kasubbag' THEN 3 WHEN 'valid_sekdin' THEN 4 ELSE 5 END")
-            ->orderByDesc('updated_at')
-            ->get();
+        $revisiCount = SuratKeluar::where('status', 'revisi')->count()
+            + Sppd::where('status', 'revisi')->count()
+            + BeritaAcara::where('status', 'revisi')->count();
 
-        $sppdList = Sppd::query()
-            ->with(['kodeKlasifikasi', 'creator', 'logVerifikasi.verifikator'])
-            ->orderByRaw("CASE status WHEN 'revisi' THEN 1 WHEN 'draf' THEN 2 WHEN 'valid_kasubbag' THEN 3 WHEN 'valid_sekdin' THEN 4 ELSE 5 END")
-            ->orderByDesc('updated_at')
-            ->get();
-
-        $beritaAcaraList = BeritaAcara::query()
-            ->with(['kodeKlasifikasi', 'creator', 'logVerifikasi.verifikator'])
-            ->orderByRaw("CASE status WHEN 'revisi' THEN 1 WHEN 'draf' THEN 2 WHEN 'valid_kasubbag' THEN 3 WHEN 'valid_sekdin' THEN 4 ELSE 5 END")
-            ->orderByDesc('updated_at')
-            ->get();
-
-        $suratMasukList = SuratMasuk::query()
-            ->with(['kodeKlasifikasi', 'disposisi'])
-            ->orderByDesc('tanggal_diterima')
-            ->orderByDesc('id')
-            ->get();
-
-        // Gabungkan seluruh naskah yang berstatus 'revisi' untuk panel peringatan prioritas Admin
-        $naskahRevisi = collect();
-
-        foreach ($suratKeluarList->where('status', 'revisi') as $sk) {
-            $naskahRevisi->push([
-                'jenis' => 'surat_keluar',
-                'jenis_label' => 'Surat Keluar',
-                'id' => $sk->id,
-                'nomor' => $sk->nomor_surat,
-                'nomor_urut' => $sk->nomor_urut,
-                'kode_bidang' => $sk->kodeKlasifikasi->kode_bidang ?? '400',
-                'tanggal' => $sk->tanggal_dikeluarkan?->format('Y-m-d'),
-                'tanggal_display' => $sk->tanggal_dikeluarkan?->format('d M Y'),
-                'tujuan' => $sk->alamat_tujuan,
-                'perihal' => $sk->perihal,
-                'sifat' => $sk->sifat,
-                'lampiran' => $sk->lampiran,
-                'catatan_revisi' => $sk->catatan_revisi ?: 'Harap perbaiki redaksi atau kelengkapan berkas naskah dinas.',
-                'model' => $sk,
-            ]);
-        }
-
-        foreach ($sppdList->where('status', 'revisi') as $sp) {
-            $naskahRevisi->push([
-                'jenis' => 'sppd',
-                'jenis_label' => 'SPPD',
-                'id' => $sp->id,
-                'nomor' => $sp->nomor_sppd,
-                'nomor_urut' => $sp->nomor_urut,
-                'kode_bidang' => $sp->kodeKlasifikasi->kode_bidang ?? '800',
-                'tanggal' => $sp->tanggal_surat?->format('Y-m-d'),
-                'tanggal_display' => $sp->tanggal_surat?->format('d M Y'),
-                'tujuan' => $sp->daerah_tujuan,
-                'perihal' => $sp->urusan_perjalanan,
-                'nama_pegawai' => $sp->nama_pegawai,
-                'nip_pegawai' => $sp->nip_pegawai,
-                'jabatan_pegawai' => $sp->jabatan_pegawai,
-                'tanggal_berangkat' => $sp->tanggal_berangkat?->format('Y-m-d'),
-                'tanggal_kembali' => $sp->tanggal_kembali?->format('Y-m-d'),
-                'catatan_revisi' => $sp->catatan_revisi ?: 'Harap perbaiki rincian tugas atau jadwal perjalanan dinas.',
-                'model' => $sp,
-            ]);
-        }
-
-        foreach ($beritaAcaraList->where('status', 'revisi') as $ba) {
-            $naskahRevisi->push([
-                'jenis' => 'berita_acara',
-                'jenis_label' => 'Berita Acara',
-                'id' => $ba->id,
-                'nomor' => $ba->nomor_berita_acara,
-                'nomor_urut' => $ba->nomor_urut,
-                'kode_bidang' => $ba->kodeKlasifikasi->kode_bidang ?? '400',
-                'tanggal' => $ba->tanggal_berita_acara?->format('Y-m-d'),
-                'tanggal_display' => $ba->tanggal_berita_acara?->format('d M Y'),
-                'tujuan' => $ba->pihak_kedua,
-                'perihal' => $ba->perihal,
-                'catatan_revisi' => $ba->catatan_revisi ?: 'Harap perbaiki pokok berita acara atau pihak kedua.',
-                'model' => $ba,
-            ]);
-        }
+        $totalNaskahBerjalan = SuratKeluar::whereIn('status', ['draf', 'valid_kasubbag', 'valid_sekdin', 'revisi'])->count()
+            + Sppd::whereIn('status', ['draf', 'valid_kasubbag', 'valid_sekdin', 'revisi'])->count()
+            + BeritaAcara::whereIn('status', ['draf', 'valid_kasubbag', 'valid_sekdin', 'revisi'])->count();
 
         return view('registrasi-surat', [
             'klasifikasiList' => $klasifikasiList,
@@ -123,11 +47,213 @@ class RegistrasiNaskahController extends Controller
             'nextUrutSppd' => $nextUrutSppd,
             'nextUrutBeritaAcara' => $nextUrutBeritaAcara,
             'nextUrutSuratMasuk' => $nextUrutSuratMasuk,
-            'suratKeluarList' => $suratKeluarList,
-            'sppdList' => $sppdList,
-            'beritaAcaraList' => $beritaAcaraList,
-            'suratMasukList' => $suratMasukList,
+            'revisiCount' => $revisiCount,
+            'totalNaskahBerjalan' => $totalNaskahBerjalan,
+        ]);
+    }
+
+    /**
+     * Menampilkan halaman khusus Riwayat & Pantauan Naskah (/riwayat-naskah) untuk Staf Admin:
+     * - Kartu ringkasan status real-time (draf, valid_kasubbag, valid_sekdin, revisi, ttd_kadin)
+     * - Panel prioritas naskah revisi & modal Edit & Ajukan Ulang
+     * - Filter kategori (Surat Keluar, SPPD, Berita Acara, Progres Surat Masuk), filter status, & pencarian
+     * - Modal Timeline Riwayat log_verifikasi & Pratinjau Berkas Lampiran
+     */
+    public function riwayat(Request $request): View
+    {
+        $klasifikasiList = KodeKlasifikasi::query()->orderBy('id')->get();
+
+        $suratKeluarList = SuratKeluar::query()
+            ->with(['kodeKlasifikasi', 'creator', 'penandatangan', 'logVerifikasi.verifikator'])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $sppdList = Sppd::query()
+            ->with(['kodeKlasifikasi', 'creator', 'penandatangan', 'logVerifikasi.verifikator'])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $beritaAcaraList = BeritaAcara::query()
+            ->with(['kodeKlasifikasi', 'creator', 'penandatangan', 'logVerifikasi.verifikator'])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $suratMasukList = SuratMasuk::query()
+            ->with(['kodeKlasifikasi', 'disposisi.kadin'])
+            ->orderByDesc('tanggal_diterima')
+            ->orderByDesc('id')
+            ->get();
+
+        $semuaNaskahKeluar = collect();
+
+        foreach ($suratKeluarList as $sk) {
+            $kodeBidang = $sk->kodeKlasifikasi->kode_bidang ?? '400';
+            $namaBidang = $sk->kodeKlasifikasi->nama_bidang ?? 'Catatan Sipil';
+            $filePath = $sk->file_konsep;
+
+            $semuaNaskahKeluar->push([
+                'key' => 'surat_keluar_' . $sk->id,
+                'jenis' => 'surat_keluar',
+                'jenis_label' => 'Surat Keluar',
+                'jenis_badge_bg' => '#DBEAFE',
+                'jenis_badge_color' => '#1D4ED8',
+                'id' => $sk->id,
+                'nomor' => $sk->nomor_surat,
+                'nomor_urut' => $sk->nomor_urut,
+                'kode_bidang' => $kodeBidang,
+                'nama_bidang' => $namaBidang,
+                'tanggal' => $sk->tanggal_dikeluarkan?->format('Y-m-d'),
+                'tanggal_display' => $sk->tanggal_dikeluarkan?->format('d M Y') ?? '-',
+                'tujuan' => $sk->alamat_tujuan,
+                'sub_tujuan' => 'Sifat: ' . ($sk->sifat ?: 'Biasa') . ' • Lampiran: ' . ($sk->lampiran ?: '-'),
+                'perihal' => $sk->perihal,
+                'sifat' => $sk->sifat ?: 'Penting',
+                'lampiran' => $sk->lampiran ?: '1 (Satu) Berkas',
+                'nama_pegawai' => null,
+                'nip_pegawai' => null,
+                'jabatan_pegawai' => null,
+                'tanggal_berangkat' => null,
+                'tanggal_kembali' => null,
+                'status' => $sk->status,
+                'posisi_meja' => $this->resolvePosisiMeja($sk->status),
+                'catatan_revisi' => $sk->catatan_revisi,
+                'tte_token_uuid' => $sk->tte_token_uuid,
+                'signed_at_display' => $sk->signed_at?->format('d M Y, H:i') . ($sk->signed_at ? ' WIB' : ''),
+                'file_path' => $filePath,
+                'file_url' => $filePath ? asset('storage/' . $filePath) : null,
+                'file_name' => $filePath ? basename($filePath) : null,
+                'pengaju_nama' => $sk->creator->nama_lengkap ?? 'Staf Admin Umpeg',
+                'updated_at_display' => $sk->updated_at?->format('d M Y, H:i') . ' WIB',
+                'priority_rank' => $this->resolveStatusPriority($sk->status),
+                'updated_ts' => $sk->updated_at?->timestamp ?? 0,
+                'logs' => $this->mapLogVerifikasi($sk->logVerifikasi),
+            ]);
+        }
+
+        foreach ($sppdList as $sp) {
+            $kodeBidang = $sp->kodeKlasifikasi->kode_bidang ?? '800';
+            $namaBidang = $sp->kodeKlasifikasi->nama_bidang ?? 'Kepegawaian & Umum';
+
+            $semuaNaskahKeluar->push([
+                'key' => 'sppd_' . $sp->id,
+                'jenis' => 'sppd',
+                'jenis_label' => 'SPPD',
+                'jenis_badge_bg' => '#FEF3C7',
+                'jenis_badge_color' => '#B45309',
+                'id' => $sp->id,
+                'nomor' => $sp->nomor_sppd,
+                'nomor_urut' => $sp->nomor_urut,
+                'kode_bidang' => $kodeBidang,
+                'nama_bidang' => $namaBidang,
+                'tanggal' => $sp->tanggal_surat?->format('Y-m-d'),
+                'tanggal_display' => $sp->tanggal_surat?->format('d M Y') ?? '-',
+                'tujuan' => $sp->daerah_tujuan,
+                'sub_tujuan' => 'Pegawai: ' . $sp->nama_pegawai . ' (' . ($sp->tanggal_berangkat?->format('d M') ?? '-') . ' s/d ' . ($sp->tanggal_kembali?->format('d M Y') ?? '-') . ')',
+                'perihal' => $sp->urusan_perjalanan,
+                'sifat' => 'Penting',
+                'lampiran' => 'Surat Tugas & Visum SPPD',
+                'nama_pegawai' => $sp->nama_pegawai,
+                'nip_pegawai' => $sp->nip_pegawai,
+                'jabatan_pegawai' => $sp->jabatan_pegawai,
+                'tanggal_berangkat' => $sp->tanggal_berangkat?->format('Y-m-d'),
+                'tanggal_kembali' => $sp->tanggal_kembali?->format('Y-m-d'),
+                'status' => $sp->status,
+                'posisi_meja' => $this->resolvePosisiMeja($sp->status),
+                'catatan_revisi' => $sp->catatan_revisi,
+                'tte_token_uuid' => $sp->tte_token_uuid,
+                'signed_at_display' => $sp->signed_at?->format('d M Y, H:i') . ($sp->signed_at ? ' WIB' : ''),
+                'file_path' => null,
+                'file_url' => null,
+                'file_name' => null,
+                'pengaju_nama' => $sp->creator->nama_lengkap ?? 'Staf Admin Umpeg',
+                'updated_at_display' => $sp->updated_at?->format('d M Y, H:i') . ' WIB',
+                'priority_rank' => $this->resolveStatusPriority($sp->status),
+                'updated_ts' => $sp->updated_at?->timestamp ?? 0,
+                'logs' => $this->mapLogVerifikasi($sp->logVerifikasi),
+            ]);
+        }
+
+        foreach ($beritaAcaraList as $ba) {
+            $kodeBidang = $ba->kodeKlasifikasi->kode_bidang ?? '400';
+            $namaBidang = $ba->kodeKlasifikasi->nama_bidang ?? 'Catatan Sipil';
+            $filePath = $ba->file_dokumen;
+
+            $semuaNaskahKeluar->push([
+                'key' => 'berita_acara_' . $ba->id,
+                'jenis' => 'berita_acara',
+                'jenis_label' => 'Berita Acara',
+                'jenis_badge_bg' => '#EDE9FE',
+                'jenis_badge_color' => '#6D28D9',
+                'id' => $ba->id,
+                'nomor' => $ba->nomor_berita_acara,
+                'nomor_urut' => $ba->nomor_urut,
+                'kode_bidang' => $kodeBidang,
+                'nama_bidang' => $namaBidang,
+                'tanggal' => $ba->tanggal_berita_acara?->format('Y-m-d'),
+                'tanggal_display' => $ba->tanggal_berita_acara?->format('d M Y') ?? '-',
+                'tujuan' => $ba->pihak_kedua,
+                'sub_tujuan' => 'Mitra / Pihak Kedua Berita Acara',
+                'perihal' => $ba->perihal,
+                'sifat' => 'Penting',
+                'lampiran' => $filePath ? '1 (Satu) Berkas Dokumen BA' : '-',
+                'nama_pegawai' => null,
+                'nip_pegawai' => null,
+                'jabatan_pegawai' => null,
+                'tanggal_berangkat' => null,
+                'tanggal_kembali' => null,
+                'status' => $ba->status,
+                'posisi_meja' => $this->resolvePosisiMeja($ba->status),
+                'catatan_revisi' => $ba->catatan_revisi,
+                'tte_token_uuid' => $ba->tte_token_uuid,
+                'signed_at_display' => $ba->signed_at?->format('d M Y, H:i') . ($ba->signed_at ? ' WIB' : ''),
+                'file_path' => $filePath,
+                'file_url' => $filePath ? asset('storage/' . $filePath) : null,
+                'file_name' => $filePath ? basename($filePath) : null,
+                'pengaju_nama' => $ba->creator->nama_lengkap ?? 'Staf Admin Umpeg',
+                'updated_at_display' => $ba->updated_at?->format('d M Y, H:i') . ' WIB',
+                'priority_rank' => $this->resolveStatusPriority($ba->status),
+                'updated_ts' => $ba->updated_at?->timestamp ?? 0,
+                'logs' => $this->mapLogVerifikasi($ba->logVerifikasi),
+            ]);
+        }
+
+        // Urutkan dengan prioritas status (revisi -> draf -> valid_kasubbag -> valid_sekdin -> ttd_kadin), lalu waktu terbaru
+        $semuaNaskahKeluar = $semuaNaskahKeluar
+            ->sort(function (array $a, array $b) {
+                if ($a['priority_rank'] !== $b['priority_rank']) {
+                    return $a['priority_rank'] <=> $b['priority_rank'];
+                }
+
+                return $b['updated_ts'] <=> $a['updated_ts'];
+            })
+            ->values();
+
+        $naskahRevisi = $semuaNaskahKeluar->where('status', 'revisi')->values();
+
+        $countRevisi = $naskahRevisi->count();
+        $countDraf = $semuaNaskahKeluar->where('status', 'draf')->count();
+        $countValidKasubbag = $semuaNaskahKeluar->where('status', 'valid_kasubbag')->count();
+        $countValidSekdin = $semuaNaskahKeluar->where('status', 'valid_sekdin')->count();
+        $countTtdKadin = $semuaNaskahKeluar->where('status', 'ttd_kadin')->count();
+
+        $countSuratMasuk = $suratMasukList->count();
+        $countSuratMasukBelumNaik = $suratMasukList->where('status_kenaikan', 'belum_naik')->count();
+
+        return view('riwayat-naskah', [
+            'klasifikasiList' => $klasifikasiList,
+            'semuaNaskahKeluar' => $semuaNaskahKeluar,
             'naskahRevisi' => $naskahRevisi,
+            'suratMasukList' => $suratMasukList,
+            'countRevisi' => $countRevisi,
+            'countDraf' => $countDraf,
+            'countValidKasubbag' => $countValidKasubbag,
+            'countValidSekdin' => $countValidSekdin,
+            'countTtdKadin' => $countTtdKadin,
+            'countSuratMasuk' => $countSuratMasuk,
+            'countSuratMasukBelumNaik' => $countSuratMasukBelumNaik,
+            'initialStatusFilter' => (string) $request->query('status', 'all'),
+            'initialKategoriFilter' => (string) $request->query('kategori', 'all_keluar'),
+            'initialOpenEditKey' => (string) $request->query('open_edit', ''),
         ]);
     }
 
@@ -464,7 +590,7 @@ class RegistrasiNaskahController extends Controller
             ]);
 
             return redirect()
-                ->route('registrasi.surat')
+                ->route('riwayat.naskah')
                 ->with('status', 'Perbaikan Surat Keluar (' . $nomorSurat . ') berhasil disimpan dan diajukan kembali ke Kasubbag Umpeg.');
         }
 
@@ -511,7 +637,7 @@ class RegistrasiNaskahController extends Controller
             ]);
 
             return redirect()
-                ->route('registrasi.surat')
+                ->route('riwayat.naskah')
                 ->with('status', 'Perbaikan SPPD (' . $naskah->nomor_sppd . ') berhasil disimpan dan diajukan kembali ke Kasubbag Umpeg.');
         }
 
@@ -555,7 +681,7 @@ class RegistrasiNaskahController extends Controller
         ]);
 
         return redirect()
-            ->route('registrasi.surat')
+            ->route('riwayat.naskah')
             ->with('status', 'Perbaikan Berita Acara (' . $naskah->nomor_berita_acara . ') berhasil disimpan dan diajukan kembali ke Kasubbag Umpeg.');
     }
 
@@ -579,5 +705,63 @@ class RegistrasiNaskahController extends Controller
             'status',
             'Surat Masuk #' . $suratMasuk->nomor_urut_agenda . ' (' . $suratMasuk->nomor_surat . ') telah diserahkan ke Ajudan Kepala Dinas untuk proses disposisi.'
         );
+    }
+
+    private function resolveStatusPriority(string $status): int
+    {
+        return match ($status) {
+            'revisi' => 1,
+            'draf' => 2,
+            'valid_kasubbag' => 3,
+            'valid_sekdin' => 4,
+            'ttd_kadin' => 5,
+            default => 6,
+        };
+    }
+
+    private function resolvePosisiMeja(string $status): string
+    {
+        return match ($status) {
+            'revisi' => 'Meja Staf Admin Umpeg (Perlu Perbaikan Revisi)',
+            'draf' => 'Meja Kasubbag Umpeg (Pemeriksaan Tahap 1)',
+            'valid_kasubbag' => 'Meja Sekretaris Dinas (Paraf Koordinasi Tahap 2)',
+            'valid_sekdin' => 'Meja Kepala Dinas (Antrean Otorisasi TTE QR Code)',
+            'ttd_kadin' => 'Selesai & Sah (Tanda Tangan Elektronik QR Code Terbit)',
+            default => '-',
+        };
+    }
+
+    private function mapLogVerifikasi(Collection $logs): array
+    {
+        return $logs->map(function ($log) {
+            $tahapLabel = match ($log->tahap_verifikasi) {
+                'staf_admin' => 'Staf Admin Umpeg (Pengaju Konsep)',
+                'kasubbag_umpeg' => 'Kasubbag Umpeg (Verifikasi Tahap 1)',
+                'sekretaris_dinas' => 'Sekretaris Dinas (Paraf Tahap 2)',
+                'kepala_dinas' => 'Kepala Dinas (Otorisasi TTE QR Code)',
+                default => $log->tahap_verifikasi,
+            };
+
+            $aksiLabel = match ($log->status_aksi) {
+                'diajukan' => 'Diajukan',
+                'valid_kasubbag' => 'Disetujui Kasubbag',
+                'valid_sekdin' => 'Diparaf Sekdin',
+                'ttd_kadin' => 'Disahkan TTE Kadin',
+                'revisi' => 'Dikembalikan (Revisi)',
+                default => $log->status_aksi,
+            };
+
+            return [
+                'tahap_verifikasi' => $log->tahap_verifikasi,
+                'tahap_label' => $tahapLabel,
+                'status_aksi' => $log->status_aksi,
+                'aksi_label' => $aksiLabel,
+                'verifikator_nama' => $log->verifikator->nama_lengkap ?? 'Pejabat / Sistem',
+                'verifikator_jabatan' => $log->verifikator->jabatan ?? '-',
+                'catatan' => $log->catatan,
+                'checklist_pemeriksaan' => $log->checklist_pemeriksaan,
+                'waktu' => $log->waktu_verifikasi ? $log->waktu_verifikasi->format('d M Y, H:i') . ' WIB' : '-',
+            ];
+        })->values()->all();
     }
 }

@@ -36,12 +36,15 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard.admin');
 
-        // Registrasi & Agenda Naskah Dinas (Surat Keluar, SPPD, Berita Acara, Surat Masuk, & Edit Revisi)
+        // Registrasi & Agenda Naskah Dinas (Surat Keluar, SPPD, Berita Acara, Surat Masuk)
         Route::get('/registrasi-surat', [RegistrasiNaskahController::class, 'index'])->name('registrasi.surat');
         Route::post('/registrasi-surat/surat-keluar', [RegistrasiNaskahController::class, 'storeSuratKeluar'])->name('registrasi.surat-keluar.store');
         Route::post('/registrasi-surat/sppd', [RegistrasiNaskahController::class, 'storeSppd'])->name('registrasi.sppd.store');
         Route::post('/registrasi-surat/berita-acara', [RegistrasiNaskahController::class, 'storeBeritaAcara'])->name('registrasi.berita-acara.store');
         Route::post('/registrasi-surat/surat-masuk', [RegistrasiNaskahController::class, 'storeSuratMasuk'])->name('registrasi.surat-masuk.store');
+
+        // Riwayat & Pantauan Naskah Dinas (Pelacakan Status Hierarki, Log Verifikasi, & Edit Revisi/Draf)
+        Route::get('/riwayat-naskah', [RegistrasiNaskahController::class, 'riwayat'])->name('riwayat.naskah');
         Route::put('/registrasi-surat/naskah/{jenis}/{id}', [RegistrasiNaskahController::class, 'updateNaskah'])->name('registrasi.naskah.update');
         Route::patch('/surat-masuk/{suratMasuk}/naik-ajudan', [RegistrasiNaskahController::class, 'naikkanSuratMasuk'])->name('surat-masuk.naik-ajudan');
 

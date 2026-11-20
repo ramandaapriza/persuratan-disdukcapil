@@ -35,6 +35,8 @@ class DashboardController extends Controller
         $naskahRevisi = collect();
         foreach ($revisiSuratKeluar as $sk) {
             $naskahRevisi->push([
+                'jenis' => 'surat_keluar',
+                'id' => $sk->id,
                 'jenis_label' => 'Surat Keluar',
                 'nomor' => $sk->nomor_surat,
                 'perihal' => $sk->perihal,
@@ -45,6 +47,8 @@ class DashboardController extends Controller
         }
         foreach ($revisiSppd as $sp) {
             $naskahRevisi->push([
+                'jenis' => 'sppd',
+                'id' => $sp->id,
                 'jenis_label' => 'SPPD',
                 'nomor' => $sp->nomor_sppd,
                 'perihal' => $sp->urusan_perjalanan,
@@ -55,6 +59,8 @@ class DashboardController extends Controller
         }
         foreach ($revisiBeritaAcara as $ba) {
             $naskahRevisi->push([
+                'jenis' => 'berita_acara',
+                'id' => $ba->id,
                 'jenis_label' => 'Berita Acara',
                 'nomor' => $ba->nomor_berita_acara,
                 'perihal' => $ba->perihal,

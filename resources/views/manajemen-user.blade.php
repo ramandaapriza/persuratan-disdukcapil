@@ -154,6 +154,10 @@
         'sekdin' => 'Otoritas: Sekdin (Verif II)',
         default => 'Otoritas: Staf Admin',
     };
+
+    $sidebarRevisiCount = \App\Models\SuratKeluar::where('status', 'revisi')->count()
+        + \App\Models\Sppd::where('status', 'revisi')->count()
+        + \App\Models\BeritaAcara::where('status', 'revisi')->count();
 @endphp
 
 <div class="d-flex">
@@ -182,6 +186,15 @@
                         <i class="bi bi-send" aria-hidden="true"></i>
                         <span>Registrasi &amp; Agenda Naskah</span>
                     </span>
+                </a>
+                <a href="/riwayat-naskah" class="nav-link-sidebar">
+                    <span class="d-flex align-items-center gap-3">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        <span>Riwayat &amp; Pantauan Naskah</span>
+                    </span>
+                    @if($sidebarRevisiCount > 0)
+                        <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
+                    @endif
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
