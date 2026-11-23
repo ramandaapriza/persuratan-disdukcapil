@@ -9,191 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --color-slate-50: #F8FAFC;
-            --color-slate-100: #F3F4F6;
-            --color-slate-200: #E5E7EB;
-            --color-slate-500: #6B7280;
-            --color-slate-700: #374151;
-            --color-slate-900: #111827;
-            --color-blue-600: #2563EB;
-            --color-emerald-600: #059669;
-            --color-rose-600: #E11D48;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-            --bg-surface: #FFFFFF;
-            --bg-canvas: var(--color-slate-100);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--color-slate-900);
-        }
-
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background-color: var(--color-slate-900);
-        }
-
-        .sidebar-section-label {
-            font-size: 0.66rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6B7280;
-            padding: 0.85rem 0.9rem 0.35rem;
-        }
-
-        .nav-link-sidebar {
-            color: #9CA3AF;
-            padding: 0.6rem 0.9rem;
-            border-radius: var(--radius-md);
-            font-size: 0.84rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .nav-link-sidebar:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #F9FAFB;
-        }
-
-        .nav-link-sidebar.active {
-            background-color: #1E293B;
-            color: #60A5FA;
-            border: 1px solid rgba(96, 165, 250, 0.15);
-        }
-
-        .surface-card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .stat-card-filter {
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .stat-card-filter:hover {
-            transform: translateY(-1px);
-            border-color: #93C5FD;
-        }
-
-        .stat-card-filter.active-filter {
-            border-width: 2px;
-            border-color: var(--color-blue-600);
-            background-color: #F8FAFC;
-        }
-
-        .mini-stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.15rem;
-            flex-shrink: 0;
-        }
-
-        .ledger-tabs .nav-link {
-            color: var(--color-slate-500);
-            font-weight: 600;
-            font-size: 0.82rem;
-            padding: 0.65rem 1rem;
-            border: none;
-            border-bottom: 2px solid transparent;
-            border-radius: 0;
-            background: transparent;
-        }
-
-        .ledger-tabs .nav-link:hover {
-            color: var(--color-slate-900);
-        }
-
-        .ledger-tabs .nav-link.active {
-            color: var(--color-blue-600);
-            border-bottom-color: var(--color-blue-600);
-            background: transparent;
-        }
-
-        .table-ledger th {
-            font-size: 0.71rem;
-            font-weight: 600;
-            color: var(--color-slate-500);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            background-color: var(--color-slate-50);
-            padding: 0.85rem 0.9rem;
-            border-bottom: 1px solid var(--color-slate-200);
-            white-space: nowrap;
-        }
-
-        .table-ledger td {
-            padding: 0.9rem 0.9rem;
-            vertical-align: middle;
-            border-bottom: 1px solid #F3F4F6;
-            font-size: 0.81rem;
-        }
-
-        .table-ledger tbody tr:hover {
-            background-color: #F8FAFC;
-        }
-
-        .doc-number-mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }
-
-        .timeline-step {
-            position: relative;
-            padding-left: 2.4rem;
-            padding-bottom: 1.15rem;
-        }
-
-        .timeline-step:last-child {
-            padding-bottom: 0;
-        }
-
-        .timeline-step::before {
-            content: '';
-            position: absolute;
-            left: 13px;
-            top: 26px;
-            bottom: 0;
-            width: 2px;
-            background-color: var(--color-slate-200);
-        }
-
-        .timeline-step:last-child::before {
-            display: none;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.82rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/esurat-modern.css') }}">
 </head>
 <body>
 @php
@@ -228,8 +44,8 @@
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
-        <div class="p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25">
-            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <div class="p-3 d-flex align-items-center gap-3 sidebar-brand-header">
+            <div class="sidebar-brand-icon text-white d-flex align-items-center justify-content-center">
                 <i class="bi bi-envelope-paper-fill fs-5" aria-hidden="true"></i>
             </div>
             <div>
@@ -259,7 +75,7 @@
                         <span>Riwayat &amp; Pantauan Naskah</span>
                     </span>
                     @if($sidebarRevisiCount > 0)
-                        <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
+                        <span class="badge rounded-pill bg-danger text-white fw-bold status-pulse" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
                     @endif
                 </a>
 
@@ -293,7 +109,7 @@
             @endif
         </div>
 
-        <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
+        <div class="p-3 sidebar-footer-panel">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
                     {{ $userInitials }}
@@ -313,28 +129,28 @@
     </aside>
 
     <div class="flex-grow-1 d-flex flex-column min-vh-100" style="margin-left: 260px;">
-        <header class="bg-white border-bottom px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
+        <header class="topbar-glass px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
             <div class="small">
                 <span class="text-secondary">Disdukcapil OKI</span>
                 <span class="text-secondary mx-1">/</span>
                 <span class="text-secondary">Operasional Admin</span>
                 <span class="text-secondary mx-1">/</span>
-                <span class="text-primary fw-medium">Riwayat &amp; Pantauan Naskah</span>
+                <span class="text-primary fw-semibold">Riwayat &amp; Pantauan Naskah</span>
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
+                <div class="border rounded-2 px-3 py-1 bg-white bg-opacity-75 text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
                     <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">{{ $userInitials }}</span>
                         <span class="text-dark fw-medium" style="font-size: 0.76rem;">{{ $userName }}</span>
                         <i class="bi bi-chevron-down text-secondary" style="font-size: 0.65rem;" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small" style="min-width: 230px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 small rounded-3" style="min-width: 230px;">
                         <li class="px-3 py-2 border-bottom">
                             <div class="fw-bold text-dark">{{ $userName }}</div>
                             <div class="text-secondary" style="font-size: 0.7rem;">{{ $userJabatan }}</div>
@@ -368,7 +184,7 @@
             @endif
 
             @if (isset($errors) && $errors->any())
-                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" data-no-autodismiss="true" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <div class="fw-bold mb-1"><i class="bi bi-exclamation-octagon-fill me-1"></i>Validasi Perbaikan Naskah Gagal:</div>
                     <ul class="mb-0 ps-3">
                         @foreach ($errors->all() as $err)
@@ -380,7 +196,7 @@
             @endif
 
             {{-- HEADER PAGE BANNER --}}
-            <div class="surface-card p-3 px-4 mb-4">
+            <div class="surface-card p-3 px-4 mb-4 animate-fade-up">
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
@@ -389,7 +205,7 @@
                             </span>
                             <span class="text-secondary" style="font-size: 0.73rem;">Lacak posisi meja verifikator, perbaiki naskah revisi, dan pantau progres surat masuk</span>
                         </div>
-                        <h6 class="fw-bold text-dark mb-0">Riwayat &amp; Pantauan Operasional Naskah Dinas Real-Time</h6>
+                        <h6 class="heading-font fw-bold text-dark mb-0">Riwayat &amp; Pantauan Operasional Naskah Dinas Real-Time</h6>
                     </div>
 
                     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -407,31 +223,31 @@
 
             {{-- 5 KARTU RINGKASAN STATUS NASKAH REAL-TIME (CLICKABLE FILTER) --}}
             <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-xl">
+                <div class="col-12 col-sm-6 col-xl animate-fade-up delay-1">
                     <div class="surface-card stat-card-filter p-3 h-100 d-flex align-items-center justify-content-between"
                          id="statCard-revisi"
                          onclick="applyQuickStatusFilter('revisi')"
                          style="{{ $countRevisi > 0 ? 'border-color: #FCA5A5; background-color: #FEF2F2;' : '' }}">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.74rem;">Perlu Revisi Admin</div>
-                            <div class="fs-4 fw-bold text-danger lh-1 mb-1">{{ $countRevisi }}</div>
+                            <div class="fs-4 fw-bold text-danger lh-1 mb-1 metric-value" data-countup="{{ $countRevisi }}">{{ $countRevisi }}</div>
                             <div class="text-danger fw-medium" style="font-size: 0.7rem;">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>Status <code>revisi</code>
                             </div>
                         </div>
-                        <div class="mini-stat-icon" style="background-color: #FEE2E2; color: #DC2626;">
+                        <div class="mini-stat-icon {{ $countRevisi > 0 ? 'status-pulse' : '' }}" style="background-color: #FEE2E2; color: #DC2626;">
                             <i class="bi bi-exclamation-triangle-fill"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl">
+                <div class="col-12 col-sm-6 col-xl animate-fade-up delay-1">
                     <div class="surface-card stat-card-filter p-3 h-100 d-flex align-items-center justify-content-between"
                          id="statCard-draf"
                          onclick="applyQuickStatusFilter('draf')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.74rem;">Menunggu Kasubbag</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $countDraf }}</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1 metric-value" style="color: #D97706;" data-countup="{{ $countDraf }}">{{ $countDraf }}</div>
                             <div class="fw-medium" style="font-size: 0.7rem; color: #B45309;">
                                 <i class="bi bi-hourglass-split me-1"></i>Tahap 1 (<code>draf</code>)
                             </div>
@@ -442,13 +258,13 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl">
+                <div class="col-12 col-sm-6 col-xl animate-fade-up delay-2">
                     <div class="surface-card stat-card-filter p-3 h-100 d-flex align-items-center justify-content-between"
                          id="statCard-valid_kasubbag"
                          onclick="applyQuickStatusFilter('valid_kasubbag')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.74rem;">Menunggu Sekdin</div>
-                            <div class="fs-4 fw-bold text-primary lh-1 mb-1">{{ $countValidKasubbag }}</div>
+                            <div class="fs-4 fw-bold text-primary lh-1 mb-1 metric-value" data-countup="{{ $countValidKasubbag }}">{{ $countValidKasubbag }}</div>
                             <div class="text-primary fw-medium" style="font-size: 0.7rem;">
                                 <i class="bi bi-vector-pen me-1"></i>Tahap 2 (<code>valid_kasubbag</code>)
                             </div>
@@ -459,13 +275,13 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl">
+                <div class="col-12 col-sm-6 col-xl animate-fade-up delay-3">
                     <div class="surface-card stat-card-filter p-3 h-100 d-flex align-items-center justify-content-between"
                          id="statCard-valid_sekdin"
                          onclick="applyQuickStatusFilter('valid_sekdin')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.74rem;">Menunggu TTE Kadin</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #7C3AED;">{{ $countValidSekdin }}</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1 metric-value" style="color: #7C3AED;" data-countup="{{ $countValidSekdin }}">{{ $countValidSekdin }}</div>
                             <div class="fw-medium" style="font-size: 0.7rem; color: #6D28D9;">
                                 <i class="bi bi-qr-code-scan me-1"></i>Tahap 3 (<code>valid_sekdin</code>)
                             </div>
@@ -476,13 +292,13 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl">
+                <div class="col-12 col-sm-6 col-xl animate-fade-up delay-4">
                     <div class="surface-card stat-card-filter p-3 h-100 d-flex align-items-center justify-content-between"
                          id="statCard-ttd_kadin"
                          onclick="applyQuickStatusFilter('ttd_kadin')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.74rem;">Selesai &amp; Sah TTE</div>
-                            <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $countTtdKadin }}</div>
+                            <div class="fs-4 fw-bold text-success lh-1 mb-1 metric-value" data-countup="{{ $countTtdKadin }}">{{ $countTtdKadin }}</div>
                             <div class="text-success fw-medium" style="font-size: 0.7rem;">
                                 <i class="bi bi-patch-check-fill me-1"></i>Terbit QR (<code>ttd_kadin</code>)
                             </div>
@@ -495,18 +311,18 @@
             </div>
 
             {{-- PANEL PRIORITAS KHUSUS REVISI: Melihat & Mengedit Ulang Naskah Berstatus 'revisi' --}}
-            <div class="surface-card overflow-hidden mb-4" id="panel-revisi" style="{{ $naskahRevisi->isNotEmpty() ? 'border-color: #FCA5A5;' : '' }}">
+            <div class="surface-card overflow-hidden mb-4 animate-fade-up delay-2" id="panel-revisi" style="{{ $naskahRevisi->isNotEmpty() ? 'border-color: #FCA5A5;' : '' }}">
                 <div class="px-4 py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2" style="background-color: {{ $naskahRevisi->isNotEmpty() ? '#FEF2F2' : '#F8FAFC' }};">
                     <div class="d-flex align-items-center gap-2">
-                        <div class="mini-stat-icon" style="width: 36px; height: 36px; font-size: 1rem; background-color: #FEE2E2; color: #DC2626;">
+                        <div class="mini-stat-icon {{ $naskahRevisi->isNotEmpty() ? 'status-pulse' : '' }}" style="width: 36px; height: 36px; font-size: 1rem; background-color: #FEE2E2; color: #DC2626;">
                             <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h6 class="fw-bold text-dark mb-0" style="font-size: 0.88rem;">Daftar Prioritas Naskah Dikembalikan untuk Revisi &amp; Pengajuan Ulang</h6>
+                            <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.88rem;">Daftar Prioritas Naskah Dikembalikan untuk Revisi &amp; Pengajuan Ulang</h6>
                             <div class="text-secondary" style="font-size: 0.73rem;">Staf Admin dapat memperbaiki redaksi, mengubah nomor/tanggal, serta mengunggah ulang berkas lampiran sesuai catatan verifikator</div>
                         </div>
                     </div>
-                    <span class="badge rounded-pill {{ $naskahRevisi->isNotEmpty() ? 'bg-danger text-white' : 'bg-success bg-opacity-10 text-success' }} px-3 py-1 fw-semibold" style="font-size: 0.72rem;">
+                    <span class="badge rounded-pill {{ $naskahRevisi->isNotEmpty() ? 'bg-danger text-white status-pulse' : 'bg-success bg-opacity-10 text-success' }} px-3 py-1 fw-semibold" style="font-size: 0.72rem;">
                         {{ $naskahRevisi->count() }} Naskah Berstatus Revisi
                     </span>
                 </div>
@@ -583,10 +399,10 @@
             </div>
 
             {{-- TABEL PANTAUAN UTAMA & FILTER CEPAT --}}
-            <div class="surface-card overflow-hidden">
+            <div class="surface-card overflow-hidden animate-fade-up delay-3">
                 <div class="px-4 pt-3 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-2">
                     <div class="pb-2">
-                        <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Meja Pantauan Progres Naskah Keluar, SPPD, Berita Acara, &amp; Agenda Surat Masuk</h6>
+                        <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.9rem;">Meja Pantauan Progres Naskah Keluar, SPPD, Berita Acara, &amp; Agenda Surat Masuk</h6>
                         <div class="text-secondary" style="font-size: 0.74rem;">Klik <strong>"Lacak Log"</strong> untuk melihat posisi meja pejabat verifikator atau <strong>"Edit Konsep"</strong> untuk memperbarui naskah.</div>
                     </div>
 
@@ -733,7 +549,7 @@
                                     </td>
                                     <td>
                                         @if ($item['status'] === 'revisi')
-                                            <span class="badge rounded-pill bg-danger text-white px-2 py-1" style="font-size: 0.71rem;">
+                                            <span class="badge rounded-pill bg-danger text-white px-2 py-1 status-pulse" style="font-size: 0.71rem;">
                                                 <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Perlu Revisi Admin
                                             </span>
                                         @elseif ($item['status'] === 'draf')
@@ -1133,6 +949,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/esurat-motion.js') }}" defer></script>
 <script>
     const NASKAH_MAP = @json($semuaNaskahKeluar->keyBy('key'));
     let activeKategori = @json($initialKategoriFilter ?: 'all_keluar');

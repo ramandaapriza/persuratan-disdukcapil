@@ -9,148 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --color-slate-50: #F8FAFC;
-            --color-slate-100: #F3F4F6;
-            --color-slate-200: #E5E7EB;
-            --color-slate-500: #6B7280;
-            --color-slate-700: #374151;
-            --color-slate-900: #111827;
-            --color-blue-600: #2563EB;
-            --color-emerald-600: #059669;
-            --color-rose-600: #E11D48;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-            --bg-surface: #FFFFFF;
-            --bg-canvas: var(--color-slate-100);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--color-slate-900);
-        }
-
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background-color: var(--color-slate-900);
-        }
-
-        .sidebar-section-label {
-            font-size: 0.66rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6B7280;
-            padding: 0.85rem 0.9rem 0.35rem;
-        }
-
-        .nav-link-sidebar {
-            color: #9CA3AF;
-            padding: 0.6rem 0.9rem;
-            border-radius: var(--radius-md);
-            font-size: 0.84rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .nav-link-sidebar:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #F9FAFB;
-        }
-
-        .nav-link-sidebar.active {
-            background-color: #1E293B;
-            color: #60A5FA;
-            border: 1px solid rgba(96, 165, 250, 0.15);
-        }
-
-        .surface-card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .surface-card.highlighted-panel {
-            border-color: var(--color-blue-600);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        .mini-stat-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 0.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .ledger-tabs .nav-link {
-            color: var(--color-slate-500);
-            font-size: 0.82rem;
-            font-weight: 600;
-            padding: 0.65rem 1.15rem;
-            border: none;
-            border-bottom: 2px solid transparent;
-            border-radius: 0;
-            cursor: pointer;
-        }
-
-        .ledger-tabs .nav-link:hover {
-            color: var(--color-slate-900);
-        }
-
-        .ledger-tabs .nav-link.active {
-            color: var(--color-blue-600);
-            background-color: transparent;
-            border-bottom-color: var(--color-blue-600);
-        }
-
-        .doc-number-mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            font-weight: 600;
-        }
-
-        .upload-dropzone {
-            border: 1.5px dashed #CBD5E1;
-            background-color: var(--color-slate-50);
-            border-radius: var(--radius-md);
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .hierarchy-flow-box {
-            background-color: var(--color-slate-50);
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-md);
-            padding: 0.85rem 1rem;
-        }
-
-        .step-pill {
-            background-color: #FFFFFF;
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-md);
-            padding: 0.4rem 0.65rem;
-            font-size: 0.74rem;
-            font-weight: 600;
-            color: var(--color-slate-900);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/esurat-modern.css') }}">
 </head>
 <body>
 @php
@@ -189,8 +48,8 @@
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
-        <div class="p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25">
-            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <div class="p-3 d-flex align-items-center gap-3 sidebar-brand-header">
+            <div class="sidebar-brand-icon text-white d-flex align-items-center justify-content-center">
                 <i class="bi bi-envelope-paper-fill fs-5" aria-hidden="true"></i>
             </div>
             <div>
@@ -220,7 +79,7 @@
                         <span>Riwayat &amp; Pantauan Naskah</span>
                     </span>
                     @if($sidebarRevisiCount > 0)
-                        <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
+                        <span class="badge rounded-pill bg-danger text-white fw-bold status-pulse" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
                     @endif
                 </a>
 
@@ -295,7 +154,7 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">10</span>
+                    <span class="badge rounded-pill bg-danger status-pulse" style="font-size: 0.68rem;">10</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
@@ -335,7 +194,7 @@
             @endif
         </div>
 
-        <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
+        <div class="p-3 sidebar-footer-panel">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
                     {{ $userInitials }}
@@ -355,28 +214,28 @@
     </aside>
 
     <div class="flex-grow-1 d-flex flex-column min-vh-100" style="margin-left: 260px;">
-        <header class="bg-white border-bottom px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
+        <header class="topbar-glass px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
             <div class="small">
                 <span class="text-secondary">Disdukcapil OKI</span>
                 <span class="text-secondary mx-1">/</span>
                 <span class="text-secondary">Agenda Persuratan</span>
                 <span class="text-secondary mx-1">/</span>
-                <span class="text-primary fw-medium">Registrasi &amp; Agenda Naskah</span>
+                <span class="text-primary fw-semibold">Registrasi &amp; Agenda Naskah</span>
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
+                <div class="border rounded-2 px-3 py-1 bg-white bg-opacity-75 text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
                     <span>Selasa, 17 November 2026</span>
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">{{ $userInitials }}</span>
                         <span class="text-dark fw-medium" style="font-size: 0.76rem;">{{ $userName }}</span>
                         <i class="bi bi-chevron-down text-secondary" style="font-size: 0.65rem;" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small" style="min-width: 230px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 small rounded-3" style="min-width: 230px;">
                         <li class="px-3 py-2 border-bottom">
                             <div class="fw-bold text-dark">{{ $userName }}</div>
                             <div class="text-secondary" style="font-size: 0.7rem;">{{ $userJabatan }}</div>
@@ -414,7 +273,7 @@
                 </div>
             @endif
             @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" data-no-autodismiss="true" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <div class="d-flex align-items-start gap-2">
                         <i class="bi bi-exclamation-octagon-fill mt-1 flex-shrink-0" aria-hidden="true"></i>
                         <div class="flex-grow-1">
@@ -430,15 +289,15 @@
                 </div>
             @endif
 
-            <div class="surface-card px-4 pt-3 mb-4 d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
+            <div class="surface-card px-4 pt-3 mb-4 d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3 animate-fade-up">
                 <div class="pb-3">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                        <h6 class="fw-bold text-dark mb-0">Registrasi &amp; Penomoran Otomatis Naskah Dinas Baru</h6>
+                        <h6 class="heading-font fw-bold text-dark mb-0">Registrasi &amp; Penomoran Otomatis Naskah Dinas Baru</h6>
                         <a href="/riwayat-naskah" class="badge rounded-pill text-decoration-none px-2 py-1 fw-semibold" style="background-color: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; font-size: 0.7rem;">
                             <i class="bi bi-clock-history me-1"></i>Buka Riwayat &amp; Pantauan Naskah ({{ $totalNaskahBerjalan ?? 0 }} Aktif) &rarr;
                         </a>
                         @if ($sidebarRevisiCount > 0)
-                            <a href="/riwayat-naskah?status=revisi#panel-revisi" class="badge rounded-pill bg-danger text-white text-decoration-none px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                            <a href="/riwayat-naskah?status=revisi#panel-revisi" class="badge rounded-pill bg-danger text-white text-decoration-none px-2 py-1 fw-semibold status-pulse" style="font-size: 0.7rem;">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>{{ $sidebarRevisiCount }} Naskah Perlu Revisi
                             </a>
                         @endif
@@ -448,25 +307,25 @@
 
                 <ul class="nav nav-tabs ledger-tabs border-0 flex-wrap" id="registrasiTabNav">
                     <li class="nav-item">
-                        <button type="button" class="nav-link active d-inline-flex align-items-center gap-2" onclick="focusRegPanel('panel-surat-keluar', this)">
+                        <button type="button" class="nav-link active d-inline-flex align-items-center gap-2" data-panel="panel-surat-keluar" onclick="focusRegPanel('panel-surat-keluar', this)">
                             <i class="bi bi-send-fill" aria-hidden="true"></i>
                             <span>Surat Keluar</span>
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" onclick="focusRegPanel('panel-sppd', this)">
+                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" data-panel="panel-sppd" onclick="focusRegPanel('panel-sppd', this)">
                             <i class="bi bi-briefcase-fill text-warning" aria-hidden="true"></i>
                             <span>Form SPPD</span>
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" onclick="focusRegPanel('panel-berita-acara', this)">
+                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" data-panel="panel-berita-acara" onclick="focusRegPanel('panel-berita-acara', this)">
                             <i class="bi bi-file-earmark-text-fill text-primary" aria-hidden="true"></i>
                             <span>Berita Acara</span>
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" onclick="focusRegPanel('panel-surat-masuk', this)">
+                        <button type="button" class="nav-link d-inline-flex align-items-center gap-2" data-panel="panel-surat-masuk" onclick="focusRegPanel('panel-surat-masuk', this)">
                             <i class="bi bi-inbox-fill text-success" aria-hidden="true"></i>
                             <span>Agenda Surat Masuk</span>
                         </button>
@@ -476,15 +335,15 @@
 
             <div class="row g-4 mb-4">
                 <!-- PANEL 1: FORMULIR INPUT SURAT KELUAR -->
-                <div class="col-12 col-xl-6" id="panel-surat-keluar">
+                <div class="col-12 col-xl-6 animate-fade-up delay-1" id="panel-surat-keluar">
                     <div class="surface-card h-100 d-flex flex-column">
                         <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
+                                <div class="mini-stat-icon" style="width: 38px; height: 38px; font-size: 1rem; background-color: #DBEAFE; color: #2563EB;">
                                     <i class="bi bi-send-plus-fill" aria-hidden="true"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 1: Formulir Input Surat Keluar</h6>
+                                    <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 1: Formulir Input Surat Keluar</h6>
                                     <div class="text-secondary" style="font-size: 0.73rem;">Aturan Penomoran Resmi Disdukcapil Kabupaten OKI</div>
                                 </div>
                             </div>
@@ -638,15 +497,15 @@
                 </div>
 
                 <!-- PANEL 2: FORMULIR INPUT SPPD -->
-                <div class="col-12 col-xl-6" id="panel-sppd">
+                <div class="col-12 col-xl-6 animate-fade-up delay-2" id="panel-sppd">
                     <div class="surface-card h-100 d-flex flex-column">
                         <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
+                                <div class="mini-stat-icon" style="width: 38px; height: 38px; font-size: 1rem; background-color: #FEF3C7; color: #D97706;">
                                     <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 2: Formulir Input SPPD</h6>
+                                    <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 2: Formulir Input SPPD</h6>
                                     <div class="text-secondary" style="font-size: 0.73rem;">Surat Perintah Perjalanan Dinas Pegawai Disdukcapil OKI</div>
                                 </div>
                             </div>
@@ -785,15 +644,15 @@
 
             <div class="row g-4 mb-4">
                 <!-- PANEL 3: FORMULIR INPUT BERITA ACARA -->
-                <div class="col-12 col-xl-6" id="panel-berita-acara">
+                <div class="col-12 col-xl-6 animate-fade-up delay-3" id="panel-berita-acara">
                     <div class="surface-card h-100 d-flex flex-column">
                         <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #EDE9FE; color: #7C3AED;">
+                                <div class="mini-stat-icon" style="width: 38px; height: 38px; font-size: 1rem; background-color: #EDE9FE; color: #7C3AED;">
                                     <i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 3: Formulir Input Berita Acara (BAST &amp; SIAK)</h6>
+                                    <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 3: Formulir Input Berita Acara (BAST &amp; SIAK)</h6>
                                     <div class="text-secondary" style="font-size: 0.73rem;">Penerbitan Berita Acara Serah Terima ber-TTE QR Code</div>
                                 </div>
                             </div>
@@ -855,15 +714,15 @@
                 </div>
 
                 <!-- PANEL 4: FORMULIR REGISTRASI AGENDA SURAT MASUK -->
-                <div class="col-12 col-xl-6" id="panel-surat-masuk">
+                <div class="col-12 col-xl-6 animate-fade-up delay-4" id="panel-surat-masuk">
                     <div class="surface-card h-100 d-flex flex-column">
                         <div class="px-4 py-3 border-bottom d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mini-stat-icon" style="background-color: #DCFCE7; color: #16A34A;">
+                                <div class="mini-stat-icon" style="width: 38px; height: 38px; font-size: 1rem; background-color: #DCFCE7; color: #16A34A;">
                                     <i class="bi bi-inbox-fill" aria-hidden="true"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 4: Registrasi Buku Agenda Surat Masuk</h6>
+                                    <h6 class="heading-font fw-bold text-dark mb-0" style="font-size: 0.9rem;">Panel 4: Registrasi Buku Agenda Surat Masuk</h6>
                                     <div class="text-secondary" style="font-size: 0.73rem;">Pencatatan Surat Masuk Eksternal &amp; Penerusan ke Ajudan Kepala Dinas</div>
                                 </div>
                             </div>
@@ -942,7 +801,7 @@
                 </div>
             </div>
 
-            <div class="surface-card p-3 px-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="surface-card p-3 px-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 animate-fade-up delay-4">
                 <div class="d-flex align-items-center gap-3">
                     <div class="mini-stat-icon" style="width: 38px; height: 38px; font-size: 1.05rem; background-color: #EFF6FF; color: #2563EB;">
                         <i class="bi bi-clock-history" aria-hidden="true"></i>
@@ -954,7 +813,7 @@
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
                     @if ($sidebarRevisiCount > 0)
-                        <a href="/riwayat-naskah?status=revisi#panel-revisi" class="btn btn-sm btn-danger fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1" style="font-size: 0.76rem;">
+                        <a href="/riwayat-naskah?status=revisi#panel-revisi" class="btn btn-sm btn-danger fw-semibold px-3 py-2 d-inline-flex align-items-center gap-1 status-pulse" style="font-size: 0.76rem;">
                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
                             <span>Perbaiki {{ $sidebarRevisiCount }} Naskah Revisi</span>
                         </a>
@@ -975,6 +834,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/esurat-motion.js') }}" defer></script>
 <script>
     function updateAutoNomorSurat() {
         const kode = document.getElementById('kodeBidangSelect').value || '400';
@@ -1001,7 +861,12 @@
         document.querySelectorAll('#registrasiTabNav .nav-link').forEach(function(el) {
             el.classList.remove('active');
         });
-        if (btnEl) btnEl.classList.add('active');
+        if (btnEl) {
+            btnEl.classList.add('active');
+        } else {
+            const matchedBtn = document.querySelector('#registrasiTabNav .nav-link[data-panel="' + panelId + '"]');
+            if (matchedBtn) matchedBtn.classList.add('active');
+        }
 
         document.querySelectorAll('.surface-card').forEach(function(card) {
             card.classList.remove('highlighted-panel');
@@ -1013,6 +878,22 @@
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        const tabMap = {
+            'surat_keluar': 'panel-surat-keluar',
+            'sppd': 'panel-sppd',
+            'berita_acara': 'panel-berita-acara',
+            'surat_masuk': 'panel-surat-masuk'
+        };
+        if (tabParam && tabMap[tabParam]) {
+            focusRegPanel(tabMap[tabParam]);
+        } else if (window.location.hash && window.location.hash.startsWith('#panel-')) {
+            focusRegPanel(window.location.hash.substring(1));
+        }
+    });
 </script>
 </body>
 </html>

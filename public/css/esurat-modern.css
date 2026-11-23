@@ -332,6 +332,137 @@ a.text-decoration-none > .surface-card:hover .mini-stat-icon,
 }
 
 /* ==========================================================================
+   5b. Operational Components: Tabs, Filter Cards, Dropzone, & Timeline
+   ========================================================================== */
+.surface-card.highlighted-panel {
+    border-color: var(--color-blue-600);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16), var(--shadow-hover);
+}
+
+.ledger-tabs .nav-link {
+    color: var(--color-slate-500);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.68rem 1.1rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+    transition: color var(--transition-fast),
+                border-bottom-color var(--transition-fast),
+                background-color var(--transition-fast);
+}
+
+.ledger-tabs .nav-link:hover {
+    color: var(--color-slate-900);
+    background-color: rgba(241, 245, 249, 0.55);
+}
+
+.ledger-tabs .nav-link.active {
+    color: var(--color-blue-600);
+    background-color: transparent;
+    border-bottom-color: var(--color-blue-600);
+}
+
+.stat-card-filter {
+    cursor: pointer;
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base),
+                border-color var(--transition-base),
+                background-color var(--transition-fast);
+}
+
+.stat-card-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(147, 197, 253, 0.85);
+}
+
+.stat-card-filter:hover .mini-stat-icon {
+    transform: scale(1.06);
+}
+
+.stat-card-filter.active-filter {
+    border-width: 2px;
+    border-color: var(--color-blue-600) !important;
+    background-color: #F8FAFC;
+    box-shadow: var(--shadow-hover);
+}
+
+.upload-dropzone {
+    border: 1.5px dashed var(--color-slate-300);
+    background-color: var(--color-slate-50);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.upload-dropzone:hover {
+    border-color: var(--color-blue-500);
+    background-color: #EFF6FF;
+}
+
+.hierarchy-flow-box {
+    background-color: var(--color-slate-50);
+    border: 1px solid var(--color-slate-200);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+}
+
+.step-pill {
+    background-color: #FFFFFF;
+    border: 1px solid var(--color-slate-200);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.68rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--color-slate-900);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.timeline-step {
+    position: relative;
+    padding-left: 2.4rem;
+    padding-bottom: 1.15rem;
+}
+
+.timeline-step:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 26px;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--color-slate-200);
+}
+
+.timeline-step:last-child::before {
+    display: none;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+}
+
+/* ==========================================================================
    6. Micro-Animations & Interactive Motion (150ms - 350ms)
    ========================================================================== */
 @keyframes esuratFadeUp {
