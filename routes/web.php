@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KadinController;
 use App\Http\Controllers\RegistrasiNaskahController;
@@ -82,8 +83,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Rute bersama seluruh aktor internal terautentikasi (Admin, Kasubbag, Sekdin, Kadin)
     Route::middleware(['role:admin,kasubbag,sekdin,kadin'])->group(function () {
-        Route::get('/buku-besar', function () {
-            return view('buku-besar');
-        })->name('buku.besar');
+        Route::get('/buku-besar', [BukuBesarController::class, 'index'])->name('buku.besar');
+        Route::get('/buku-besar/export-excel', [BukuBesarController::class, 'exportExcel'])->name('buku.besar.export-excel');
+        Route::get('/buku-besar/export-pdf', [BukuBesarController::class, 'exportPdf'])->name('buku.besar.export-pdf');
     });
 });

@@ -139,6 +139,43 @@
             font-size: 0.78rem;
             font-weight: 600;
         }
+
+        .timeline-step {
+            position: relative;
+            padding-left: 2.3rem;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-step:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--color-slate-200);
+        }
+
+        .timeline-step:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -169,15 +206,14 @@
         default => 'Otoritas: Staf Admin',
     };
 
-    $sidebarRevisiCount = $userRole === 'admin' ? (
-        \App\Models\SuratKeluar::where('status', 'revisi')->count()
-        + \App\Models\Sppd::where('status', 'revisi')->count()
-        + \App\Models\BeritaAcara::where('status', 'revisi')->count()
-    ) : 0;
+    $activeJenis = $filters['jenis'] ?? 'semua';
+    $activeKodeBidang = $filters['kode_bidang'] ?? 'semua';
+    $activeStatus = $filters['status'] ?? 'semua';
+    $activeTanggalDari = $filters['tanggal_dari'] ?? '';
+    $activeTanggalSampai = $filters['tanggal_sampai'] ?? '';
+    $activeSearch = $filters['q'] ?? '';
 
-    $kadinCounters = $userRole === 'kadin'
-        ? \App\Http\Controllers\KadinController::getSidebarCounters()
-        : ['menungguTteCount' => 0, 'menungguDisposisiCount' => 0];
+    $pageItemsCollection = collect($ledgerItems->items());
 @endphp
 
 <div class="d-flex">
@@ -212,7 +248,7 @@
                         <i class="bi bi-clock-history" aria-hidden="true"></i>
                         <span>Riwayat &amp; Pantauan Naskah</span>
                     </span>
-                    @if($sidebarRevisiCount > 0)
+                    @if(($sidebarRevisiCount ?? 0) > 0)
                         <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
                     @endif
                 </a>
@@ -251,7 +287,9 @@
                         <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                         <span>Verifikasi Hierarki Naskah</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ auth()->user()->role === 'sekdin' ? '3' : '4' }}</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">
+                        {{ auth()->user()->role === 'sekdin' ? ($verifTahap2Count ?? 0) : ($verifTahap1Count ?? 0) }}
+                    </span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -288,14 +326,14 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $kadinCounters['menungguTteCount'] }}</span>
+                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $menungguTteCount ?? 0 }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $kadinCounters['menungguDisposisiCount'] }}</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $menungguDisposisiCount ?? 0 }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -360,7 +398,7 @@
             <div class="d-flex align-items-center gap-2">
                 <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
-                    <span>Selasa, 17 November 2026</span>
+                    <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
@@ -401,71 +439,97 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup" style="font-size: 0.65rem;"></button>
                 </div>
             @endif
+
+            {{-- FORM FILTER DINAMIS & EKSPOR LAPORAN --}}
             <div class="surface-card p-3 px-4 mb-4">
-                <div class="d-flex flex-column flex-xl-row align-items-xl-end justify-content-between gap-3">
-                    <div class="row g-3 flex-grow-1">
-                        <div class="col-12 col-md-4">
-                            <label class="form-label fw-semibold text-dark small mb-1">
-                                <i class="bi bi-calendar-range text-primary me-1" aria-hidden="true"></i>Rentang Tanggal Agenda
-                            </label>
-                            <div class="input-group input-group-sm">
-                                <input type="date" class="form-control" value="2026-11-01" aria-label="Tanggal Mulai">
-                                <span class="input-group-text bg-light text-secondary">s/d</span>
-                                <input type="date" class="form-control" value="2026-11-17" aria-label="Tanggal Akhir">
+                <form id="formFilterBukuBesar" action="{{ route('buku.besar') }}" method="GET">
+                    <div class="d-flex flex-column flex-xl-row align-items-xl-end justify-content-between gap-3">
+                        <div class="row g-3 flex-grow-1">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-dark small mb-1">
+                                    <i class="bi bi-calendar-range text-primary me-1" aria-hidden="true"></i>Rentang Tanggal Agenda
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <input type="date" name="tanggal_dari" class="form-control" value="{{ $activeTanggalDari }}" aria-label="Tanggal Mulai">
+                                    <span class="input-group-text bg-light text-secondary">s/d</span>
+                                    <input type="date" name="tanggal_sampai" class="form-control" value="{{ $activeTanggalSampai }}" aria-label="Tanggal Akhir">
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-4 col-md-3">
+                                <label for="filterJenisNaskah" class="form-label fw-semibold text-dark small mb-1">
+                                    <i class="bi bi-layers text-primary me-1" aria-hidden="true"></i>Jenis Naskah Dinas
+                                </label>
+                                <select name="jenis" id="filterJenisNaskah" onchange="this.form.submit()" class="form-select form-select-sm fw-medium">
+                                    <option value="semua" {{ $activeJenis === 'semua' ? 'selected' : '' }}>Semua Jenis Naskah</option>
+                                    <option value="surat_masuk" {{ $activeJenis === 'surat_masuk' ? 'selected' : '' }}>Surat Masuk</option>
+                                    <option value="surat_keluar" {{ $activeJenis === 'surat_keluar' ? 'selected' : '' }}>Surat Keluar</option>
+                                    <option value="sppd" {{ $activeJenis === 'sppd' ? 'selected' : '' }}>SPPD (Perjalanan Dinas)</option>
+                                    <option value="berita_acara" {{ $activeJenis === 'berita_acara' ? 'selected' : '' }}>Berita Acara</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-sm-4 col-md-3">
+                                <label for="filterKodeBidang" class="form-label fw-semibold text-dark small mb-1">
+                                    <i class="bi bi-diagram-2 text-primary me-1" aria-hidden="true"></i>Kode Klasifikasi Bidang
+                                </label>
+                                <select name="kode_bidang" id="filterKodeBidang" onchange="this.form.submit()" class="form-select form-select-sm fw-medium">
+                                    <option value="semua" {{ $activeKodeBidang === 'semua' ? 'selected' : '' }}>Semua Klasifikasi (400, 800, 00)</option>
+                                    <option value="400" {{ $activeKodeBidang === '400' ? 'selected' : '' }}>400 - Catatan Sipil</option>
+                                    <option value="800" {{ $activeKodeBidang === '800' ? 'selected' : '' }}>800 - Kepegawaian &amp; Umum</option>
+                                    <option value="00" {{ $activeKodeBidang === '00' ? 'selected' : '' }}>00 - Keuangan / Dana</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-sm-4 col-md-2">
+                                <label for="filterStatusSelect" class="form-label fw-semibold text-dark small mb-1">
+                                    <i class="bi bi-check2-circle text-primary me-1" aria-hidden="true"></i>Status
+                                </label>
+                                <select name="status" id="filterStatusSelect" onchange="this.form.submit()" class="form-select form-select-sm fw-medium">
+                                    <option value="semua" {{ $activeStatus === 'semua' ? 'selected' : '' }}>Semua Status</option>
+                                    <option value="ttd_kadin" {{ $activeStatus === 'ttd_kadin' ? 'selected' : '' }}>Sah TTE Kadin</option>
+                                    <option value="valid_sekdin" {{ $activeStatus === 'valid_sekdin' ? 'selected' : '' }}>Antrean TTE Kadin</option>
+                                    <option value="valid_kasubbag" {{ $activeStatus === 'valid_kasubbag' ? 'selected' : '' }}>Tahap 2 Sekdin</option>
+                                    <option value="draf" {{ $activeStatus === 'draf' ? 'selected' : '' }}>Tahap 1 Kasubbag</option>
+                                    <option value="revisi" {{ $activeStatus === 'revisi' ? 'selected' : '' }}>Perlu Revisi</option>
+                                    <option value="selesai" {{ $activeStatus === 'selesai' ? 'selected' : '' }}>Disposisi Selesai</option>
+                                    <option value="diproses" {{ $activeStatus === 'diproses' ? 'selected' : '' }}>Disposisi Diproses</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <label for="filterJenisNaskah" class="form-label fw-semibold text-dark small mb-1">
-                                <i class="bi bi-layers text-primary me-1" aria-hidden="true"></i>Jenis Naskah Dinas
-                            </label>
-                            <select id="filterJenisNaskah" onchange="applyLedgerFilter()" class="form-select form-select-sm fw-medium">
-                                <option value="semua" selected>Semua Jenis Naskah</option>
-                                <option value="Surat Masuk">Surat Masuk</option>
-                                <option value="Surat Keluar">Surat Keluar</option>
-                                <option value="SPPD">SPPD (Perjalanan Dinas)</option>
-                                <option value="Berita Acara">Berita Acara</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <label for="filterKodeBidang" class="form-label fw-semibold text-dark small mb-1">
-                                <i class="bi bi-diagram-2 text-primary me-1" aria-hidden="true"></i>Kode Klasifikasi Bidang
-                            </label>
-                            <select id="filterKodeBidang" onchange="applyLedgerFilter()" class="form-select form-select-sm fw-medium">
-                                <option value="semua" selected>Semua Klasifikasi (400, 800, 00)</option>
-                                <option value="Kode 400">400 - Catatan Sipil</option>
-                                <option value="Kode 800">800 - Kepegawaian</option>
-                                <option value="Kode 00">00 - Keuangan</option>
-                            </select>
+                        <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
+                            <button type="submit" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+                                <span>Terapkan</span>
+                            </button>
+                            <a href="{{ route('buku.besar') }}" class="btn btn-sm btn-outline-secondary px-2 py-2 rounded-2" title="Reset Filter">
+                                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                            </a>
+                            <a href="{{ route('buku.besar.export-excel', request()->query()) }}" class="btn btn-sm btn-success fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm">
+                                <i class="bi bi-file-earmark-excel-fill" aria-hidden="true"></i>
+                                <span>Export Excel</span>
+                            </a>
+                            <a href="{{ route('buku.besar.export-pdf', request()->query()) }}" class="btn btn-sm btn-danger fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm">
+                                <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
+                                <span>Cetak Rekap PDF</span>
+                            </a>
                         </div>
                     </div>
 
-                    <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
-                        <button type="button" onclick="applyLedgerFilter()" class="btn btn-sm btn-primary fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1">
-                            <i class="bi bi-funnel-fill" aria-hidden="true"></i>
-                            <span>Terapkan</span>
-                        </button>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#modalExportInfo" class="btn btn-sm btn-success fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm">
-                            <i class="bi bi-file-earmark-excel-fill" aria-hidden="true"></i>
-                            <span>Export Excel</span>
-                        </button>
-                        <button type="button" onclick="window.print()" class="btn btn-sm btn-danger fw-semibold px-3 py-2 rounded-2 d-inline-flex align-items-center gap-1 shadow-sm">
-                            <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
-                            <span>Cetak Rekap PDF</span>
-                        </button>
-                    </div>
-                </div>
+                    <input type="hidden" name="q" id="hiddenSearchInput" value="{{ $activeSearch }}">
+                </form>
             </div>
 
+            {{-- 4 MINI-CARD REAL-TIME DARI DATABASE --}}
             <div class="row g-3 mb-4">
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('semua', this)">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('semua')">
                         <div>
-                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Agenda Bulan Ini</div>
-                            <div class="fs-4 fw-bold text-dark lh-1 mb-1">312</div>
+                            <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Agenda Persuratan</div>
+                            <div class="fs-4 fw-bold text-dark lh-1 mb-1">{{ $totalAgenda ?? 0 }}</div>
                             <div class="text-primary fw-medium" style="font-size: 0.72rem;">
-                                <i class="bi bi-journal-check me-1" aria-hidden="true"></i>Periode November 2026
+                                <i class="bi bi-journal-check me-1" aria-hidden="true"></i>{{ $totalSuratMasuk ?? 0 }} Masuk &bull; {{ ($totalSuratKeluar ?? 0) + ($totalSppd ?? 0) + ($totalBeritaAcara ?? 0) }} Keluar/Naskah
                             </div>
                         </div>
                         <div class="mini-stat-icon" style="background-color: #DBEAFE; color: #2563EB;">
@@ -475,12 +539,12 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('Surat Keluar', this)">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('surat_keluar')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Surat Keluar Ber-TTE</div>
-                            <div class="fs-4 fw-bold text-success lh-1 mb-1">142</div>
+                            <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $totalSuratKeluarTte ?? 0 }}</div>
                             <div class="text-success fw-medium" style="font-size: 0.72rem;">
-                                <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Tervalidasi QR Code UUID
+                                <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Dari {{ $totalSuratKeluar ?? 0 }} total surat keluar
                             </div>
                         </div>
                         <div class="mini-stat-icon" style="background-color: #DCFCE7; color: #16A34A;">
@@ -490,10 +554,10 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('SPPD', this)">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('sppd')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total SPPD Terbit</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">34</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $totalSppd ?? 0 }}</div>
                             <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
                                 <i class="bi bi-geo-alt-fill me-1" aria-hidden="true"></i>Dinas Dalam &amp; Luar Daerah
                             </div>
@@ -505,10 +569,10 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('Berita Acara', this)">
+                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('berita_acara')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Berita Acara</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #7C3AED;">28</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #7C3AED;">{{ $totalBeritaAcara ?? 0 }}</div>
                             <div class="fw-medium" style="font-size: 0.72rem; color: #6D28D9;">
                                 <i class="bi bi-file-earmark-ruled me-1" aria-hidden="true"></i>BAST &amp; Rekonsiliasi SIAK
                             </div>
@@ -524,38 +588,45 @@
                 <div class="px-4 pt-3 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                     <ul class="nav nav-tabs ledger-tabs border-0" id="ledgerTabNav">
                         <li class="nav-item">
-                            <button type="button" class="nav-link active" onclick="selectLedgerTab('semua', this)">
-                                Semua Naskah <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-1">312</span>
+                            <button type="button" class="nav-link {{ $activeJenis === 'semua' ? 'active' : '' }}" onclick="selectLedgerTab('semua')">
+                                Semua Naskah <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-1">{{ $totalAgenda ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button type="button" class="nav-link" onclick="selectLedgerTab('Surat Masuk', this)">
-                                Surat Masuk <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">108</span>
+                            <button type="button" class="nav-link {{ $activeJenis === 'surat_masuk' ? 'active' : '' }}" onclick="selectLedgerTab('surat_masuk')">
+                                Surat Masuk <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $totalSuratMasuk ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button type="button" class="nav-link" onclick="selectLedgerTab('Surat Keluar', this)">
-                                Surat Keluar <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">142</span>
+                            <button type="button" class="nav-link {{ $activeJenis === 'surat_keluar' ? 'active' : '' }}" onclick="selectLedgerTab('surat_keluar')">
+                                Surat Keluar <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $totalSuratKeluar ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button type="button" class="nav-link" onclick="selectLedgerTab('SPPD', this)">
-                                SPPD <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">34</span>
+                            <button type="button" class="nav-link {{ $activeJenis === 'sppd' ? 'active' : '' }}" onclick="selectLedgerTab('sppd')">
+                                SPPD <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $totalSppd ?? 0 }}</span>
                             </button>
                         </li>
                         <li class="nav-item">
-                            <button type="button" class="nav-link" onclick="selectLedgerTab('Berita Acara', this)">
-                                Berita Acara <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">28</span>
+                            <button type="button" class="nav-link {{ $activeJenis === 'berita_acara' ? 'active' : '' }}" onclick="selectLedgerTab('berita_acara')">
+                                Berita Acara <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-1">{{ $totalBeritaAcara ?? 0 }}</span>
                             </button>
                         </li>
                     </ul>
 
                     <div class="pb-2 d-flex align-items-center gap-2">
-                        <div class="input-group input-group-sm" style="width: 245px;">
+                        <div class="input-group input-group-sm" style="width: 265px;">
                             <span class="input-group-text bg-white border-end-0 text-secondary">
                                 <i class="bi bi-search" aria-hidden="true"></i>
                             </span>
-                            <input type="text" id="ledgerSearchInput" onkeyup="applyLedgerFilter()" class="form-control border-start-0 ps-0" placeholder="Cari nomor surat / perihal...">
+                            <input type="text"
+                                   id="ledgerSearchInput"
+                                   value="{{ $activeSearch }}"
+                                   onkeydown="if(event.key==='Enter'){submitSearchQuery();}"
+                                   oninput="filterClientRows(this.value)"
+                                   class="form-control border-start-0 ps-0"
+                                   placeholder="Cari nomor surat / perihal / tujuan...">
+                            <button type="button" onclick="submitSearchQuery()" class="btn btn-outline-primary">Cari</button>
                         </div>
                     </div>
                 </div>
@@ -575,197 +646,71 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr data-kategori="Surat Keluar" data-kode="Kode 400">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#AG-2763</span>
-                                </td>
-                                <td class="text-secondary">12 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-primary">400/2763/disdukcapil/2026</div>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 400 - Catatan Sipil
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-send-fill me-1" aria-hidden="true"></i>Surat Keluar
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Ditjen Dukcapil Kemendagri RI</div>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Tujuan: Jakarta Pusat</div>
-                                </td>
-                                <td>
-                                    <div class="text-dark fw-medium">Penyampaian Laporan Rekapitulasi Penerbitan Akta Pencatatan Sipil Semester II</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Sah Ber-TTE Kadin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/verifikasi-dokumen" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-kategori="Surat Masuk" data-kode="Kode 400">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#SM-0142</span>
-                                </td>
-                                <td class="text-secondary">10 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-dark">005/341/Setda-OKI/2026</div>
-                                    <span class="badge bg-info bg-opacity-10 text-dark border border-info-subtle fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Disposisi ke Kode 400
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #E0F2FE; color: #0369A1; font-size: 0.72rem;">
-                                        <i class="bi bi-inbox-fill me-1" aria-hidden="true"></i>Surat Masuk
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Sekretariat Daerah Kab. OKI</div>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Ajudan: Rizky Pratama, S.IP</div>
-                                </td>
-                                <td>
-                                    <div class="text-dark fw-medium">Permintaan Data Agregat Kependudukan Bersih (DAK2) Semester II</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-check2-all me-1" aria-hidden="true"></i>Disposisi Selesai
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="{{ auth()->user()->role === 'kadin' ? '/kadin/disposisi' : '/verifikasi-dokumen' }}" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-kategori="SPPD" data-kode="Kode 800">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#SP-0091</span>
-                                </td>
-                                <td class="text-secondary">12 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-dark">090/091/SPPD/DUKCAPIL/2026</div>
-                                    <span class="badge bg-warning bg-opacity-15 text-dark fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 800 - Kepegawaian
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
-                                        <i class="bi bi-briefcase-fill me-1" aria-hidden="true"></i>SPPD
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Drs. H. Ahmad Fauzi, M.Si</div>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Tujuan: Dukcapil Prov. Sumsel</div>
-                                </td>
-                                <td>
-                                    <div class="text-dark fw-medium">Rapat Koordinasi Teknis Pemutakhiran Data &amp; Rekonsiliasi Blangko KTP-el</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Sah Ber-TTE Kadin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/verifikasi-dokumen" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-kategori="Berita Acara" data-kode="Kode 400">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#BA-0028</span>
-                                </td>
-                                <td class="text-secondary">11 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-dark">400/028/BA-SIAK/XI/2026</div>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 400 - Catatan Sipil
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #EDE9FE; color: #6D28D9; font-size: 0.72rem;">
-                                        <i class="bi bi-file-earmark-text-fill me-1" aria-hidden="true"></i>Berita Acara
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">Kantor Kecamatan Kayuagung</div>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Pihak II: Camat Kayuagung</div>
-                                </td>
-                                <td>
-                                    <div class="text-dark fw-medium">Berita Acara Serah Terima (BAST) Distribusi 1.500 Keping Blangko KTP-el</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #DCFCE7; color: #15803D; font-size: 0.72rem;">
-                                        <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Sah Ber-TTE Kadin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="/verifikasi-dokumen" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
-                                    </a>
-                                </td>
-                            </tr>
-
-                            <tr data-kategori="Surat Keluar" data-kode="Kode 00">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-dark font-monospace">#AG-2762</span>
-                                </td>
-                                <td class="text-secondary">09 Nov 2026</td>
-                                <td>
-                                    <div class="doc-number-mono text-primary">00/2762/disdukcapil/2026</div>
-                                    <span class="badge bg-secondary bg-opacity-10 text-dark border fw-medium mt-1" style="font-size: 0.68rem;">
-                                        Kode 00 - Keuangan
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: #DBEAFE; color: #1D4ED8; font-size: 0.72rem;">
-                                        <i class="bi bi-send-fill me-1" aria-hidden="true"></i>Surat Keluar
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark">BPKAD Kabupaten OKI</div>
-                                    <div class="text-secondary" style="font-size: 0.73rem;">Tujuan: Kayuagung</div>
-                                </td>
-                                <td>
-                                    <div class="text-dark fw-medium">Pengajuan SPP-GU dan Laporan Realisasi Dana Operasional Pelayanan Keliling</div>
-                                </td>
-                                <td>
-                                    <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: #FEF3C7; color: #B45309; font-size: 0.72rem;">
-                                        <i class="bi bi-hourglass-split me-1" aria-hidden="true"></i>Antrean TTE Kadin
-                                    </span>
-                                </td>
-                                <td class="pe-4 text-end">
-                                    <a href="{{ auth()->user()->role === 'kadin' ? '/kadin/validasi' : (in_array(auth()->user()->role, ['kasubbag', 'sekdin']) ? '/verifikasi-hierarki' : '/verifikasi-dokumen') }}" class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1" style="font-size: 0.74rem;">
-                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Lihat Arsip
-                                    </a>
-                                </td>
-                            </tr>
+                            @forelse ($ledgerItems as $item)
+                                @php
+                                    $bidangBadgeClass = match($item['kode_bidang']) {
+                                        '800' => 'bg-warning bg-opacity-15 text-dark',
+                                        '00' => 'bg-secondary bg-opacity-10 text-dark border',
+                                        default => 'bg-primary bg-opacity-10 text-primary',
+                                    };
+                                @endphp
+                                <tr class="ledger-data-row">
+                                    <td class="ps-4">
+                                        <span class="fw-bold text-dark font-monospace">{{ $item['no_agenda'] }}</span>
+                                    </td>
+                                    <td class="text-secondary">{{ $item['tanggal_display'] }}</td>
+                                    <td>
+                                        <div class="doc-number-mono text-primary">{{ $item['nomor_naskah'] }}</div>
+                                        <span class="badge {{ $bidangBadgeClass }} fw-medium mt-1" style="font-size: 0.68rem;">
+                                            Kode {{ $item['kode_bidang'] }} - {{ $item['nama_bidang'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-2 px-2 py-1 fw-semibold" style="background-color: {{ $item['kategori_badge_bg'] }}; color: {{ $item['kategori_badge_color'] }}; font-size: 0.72rem;">
+                                            <i class="bi {{ $item['kategori_icon'] }} me-1" aria-hidden="true"></i>{{ $item['kategori_label'] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ $item['pihak_utama'] }}</div>
+                                        <div class="text-secondary" style="font-size: 0.73rem;">{{ $item['pihak_sub'] }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark fw-medium">{{ $item['perihal'] }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill fw-medium px-2 py-1" style="background-color: {{ $item['status_badge_bg'] }}; color: {{ $item['status_badge_color'] }}; font-size: 0.72rem;">
+                                            <i class="bi {{ $item['status_icon'] }} me-1" aria-hidden="true"></i>{{ $item['status_label'] }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <button type="button"
+                                                onclick="openDetailArsipByKey('{{ $item['key'] }}')"
+                                                class="btn btn-sm btn-outline-primary fw-medium px-2 py-1 d-inline-flex align-items-center gap-1"
+                                                style="font-size: 0.74rem;">
+                                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                                            <span>Lihat Arsip</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-secondary">
+                                        <i class="bi bi-journal-x fs-4 d-block mb-1"></i>
+                                        Tidak ada rekaman naskah dinas yang sesuai dengan filter yang dipilih.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
                 <div class="card-footer bg-white border-top px-4 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
                     <span class="text-secondary" style="font-size: 0.76rem;">
-                        Menampilkan <strong>1 &ndash; 5</strong> dari <strong>312</strong> rekaman buku besar naskah dinas
+                        Menampilkan <strong>{{ $ledgerItems->firstItem() ?? 0 }} &ndash; {{ $ledgerItems->lastItem() ?? 0 }}</strong> dari <strong>{{ $ledgerItems->total() }}</strong> rekaman buku besar naskah dinas
                     </span>
-                    <nav aria-label="Navigasi halaman buku besar">
-                        <ul class="pagination pagination-sm mb-0">
-                            <li class="page-item disabled"><button type="button" class="page-link">Sebelumnya</button></li>
-                            <li class="page-item active"><button type="button" class="page-link">1</button></li>
-                            <li class="page-item"><button type="button" class="page-link" onclick="applyLedgerFilter()">2</button></li>
-                            <li class="page-item"><button type="button" class="page-link" onclick="applyLedgerFilter()">3</button></li>
-                            <li class="page-item"><button type="button" class="page-link" onclick="applyLedgerFilter()">Selanjutnya</button></li>
-                        </ul>
-                    </nav>
+                    <div>
+                        {{ $ledgerItems->withQueryString()->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             </div>
         </main>
@@ -777,26 +722,84 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalExportInfo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- MODAL 1: DETAIL ARSIP NASKAH DINAS (TERINTEGRASI TAHAP 4A VERIFIKASI QR & UNDUH PDF) --}}
+<div class="modal fade" id="modalDetailArsip" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
             <div class="modal-header border-bottom px-4 py-3">
-                <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-excel-fill text-success" aria-hidden="true"></i>
-                    <span>Ekspor Buku Besar Persuratan (Excel .XLSX)</span>
-                </h6>
+                <div>
+                    <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                        <i class="bi bi-journal-text text-primary" aria-hidden="true"></i>
+                        <span>Rincian Arsip Buku Besar Persuratan Digital</span>
+                    </h6>
+                    <div class="text-secondary small">
+                        No. Agenda: <span id="arsipModalAgenda" class="fw-bold text-dark font-monospace">-</span> &bull;
+                        Nomor Naskah: <span id="arsipModalNomor" class="doc-number-mono text-primary">-</span>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4 small">
-                <p class="text-secondary mb-3">Rekapitulasi Buku Besar Persuratan Disdukcapil OKI siap diunduh sesuai filter yang aktif:</p>
-                <div class="p-3 rounded-2 bg-light border mb-0">
-                    <div class="fw-bold text-dark mb-1">Berkas: Buku_Besar_Disdukcapil_OKI_Nov2026.xlsx</div>
-                    <div class="text-secondary">Mencakup Nomor Agenda, Klasifikasi (400/800/00), Riwayat Disposisi Ajudan, &amp; Token UUID TTE.</div>
+                <div class="p-3 rounded-3 mb-3 border" style="background-color: #F8FAFC;">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="arsipModalKategoriBadge" class="badge rounded-2 px-2 py-1 fw-semibold">-</span>
+                            <span id="arsipModalBidangBadge" class="badge bg-primary bg-opacity-10 text-primary fw-semibold">-</span>
+                        </div>
+                        <span id="arsipModalStatusBadge" class="badge rounded-pill px-2 py-1 fw-semibold">-</span>
+                    </div>
+                    <div class="fw-bold text-dark mb-1" id="arsipModalPerihal" style="font-size: 0.88rem;">-</div>
+                    <div class="text-secondary" id="arsipModalPihak">-</div>
+                    <div class="text-secondary mt-1" id="arsipModalTanggal" style="font-size: 0.73rem;">-</div>
+                </div>
+
+                {{-- BOX TOKEN UUID TTE & TAUTAN TAHAP 4A (KHUSUS NASKAH BERSTATUS ttd_kadin) --}}
+                <div id="arsipModalTteBox" class="p-3 rounded-3 mb-3 border d-none" style="background-color: #ECFDF5; border-color: #A7F3D0 !important;">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                        <div>
+                            <div class="fw-bold text-success d-flex align-items-center gap-1">
+                                <i class="bi bi-patch-check-fill"></i>
+                                <span>Dokumen Sah Ber-Tanda Tangan Elektronik (TTE QR Code)</span>
+                            </div>
+                            <div class="doc-number-mono text-dark mt-1" style="font-size: 0.73rem;">
+                                Token UUID: <span id="arsipModalUuid" class="text-primary">-</span>
+                            </div>
+                            <div class="text-secondary mt-1" id="arsipModalSignedInfo" style="font-size: 0.71rem;">-</div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                            <a id="arsipModalVerifyLink" href="#" class="btn btn-sm btn-outline-success fw-semibold">
+                                <i class="bi bi-qr-code-scan me-1"></i>Cek Portal Verifikasi QR
+                            </a>
+                            <a id="arsipModalDownloadPdfLink" href="#" class="btn btn-sm btn-primary fw-semibold">
+                                <i class="bi bi-file-earmark-arrow-down-fill me-1"></i>Unduh Salinan Resmi PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- BOX DISPOSISI SURAT MASUK --}}
+                <div id="arsipModalDisposisiSection" class="d-none">
+                    <h6 class="fw-bold text-dark mb-2" style="font-size: 0.82rem;">
+                        <i class="bi bi-inbox-fill text-primary me-1"></i>Rincian Disposisi Kepala Dinas
+                    </h6>
+                    <div id="arsipModalDisposisiContent" class="p-3 rounded-2 border bg-light"></div>
+                </div>
+
+                {{-- BOX TIMELINE LOG VERIFIKASI (SURAT KELUAR / SPPD / BERITA ACARA) --}}
+                <div id="arsipModalTimelineSection" class="d-none">
+                    <h6 class="fw-bold text-dark mb-3" style="font-size: 0.82rem;">
+                        <i class="bi bi-diagram-3-fill text-primary me-1"></i>Jejak Audit Verifikasi Berjenjang (<code>log_verifikasi</code>)
+                    </h6>
+                    <div id="arsipModalTimelineContainer" class="ps-1"></div>
                 </div>
             </div>
-            <div class="modal-footer border-top px-4 py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-sm btn-success fw-semibold" data-bs-dismiss="modal"><i class="bi bi-download me-1"></i>Unduh Sekarang</button>
+            <div class="modal-footer border-top px-4 py-2 d-flex align-items-center justify-content-between">
+                <div>
+                    <a id="arsipModalFileLampiranBtn" href="#" target="_blank" class="btn btn-sm btn-outline-primary fw-semibold d-none">
+                        <i class="bi bi-paperclip me-1"></i>Buka Berkas Lampiran Unggahan
+                    </a>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
@@ -848,30 +851,128 @@
 <script>
     localStorage.removeItem('esurat_locked_role');
 
-    function selectLedgerTab(category, btnEl) {
-        document.getElementById('filterJenisNaskah').value = category;
-        if (btnEl && btnEl.classList.contains('nav-link')) {
-            document.querySelectorAll('#ledgerTabNav .nav-link').forEach(function(el) {
-                el.classList.remove('active');
-            });
-            btnEl.classList.add('active');
+    const LEDGER_ITEMS_MAP = @json($pageItemsCollection->keyBy('key'));
+
+    function selectLedgerTab(jenisValue) {
+        const selectEl = document.getElementById('filterJenisNaskah');
+        if (selectEl) {
+            selectEl.value = jenisValue;
         }
-        applyLedgerFilter();
+        document.getElementById('formFilterBukuBesar').submit();
     }
 
-    function applyLedgerFilter() {
-        const jenis = document.getElementById('filterJenisNaskah').value;
-        const kode = document.getElementById('filterKodeBidang').value;
-        const q = (document.getElementById('ledgerSearchInput').value || '').toLowerCase();
+    function submitSearchQuery() {
+        const qVal = document.getElementById('ledgerSearchInput').value || '';
+        document.getElementById('hiddenSearchInput').value = qVal;
+        document.getElementById('formFilterBukuBesar').submit();
+    }
 
-        document.querySelectorAll('#ledgerDataTable tbody tr').forEach(function(row) {
-            const rowKategori = row.getAttribute('data-kategori') || '';
-            const rowKode = row.getAttribute('data-kode') || '';
-            const textMatch = row.innerText.toLowerCase().includes(q);
-            const jenisMatch = (jenis === 'semua') || (rowKategori === jenis);
-            const kodeMatch = (kode === 'semua') || (rowKode === kode);
-            row.style.display = (textMatch && jenisMatch && kodeMatch) ? '' : 'none';
+    function filterClientRows(query) {
+        const q = (query || '').toLowerCase();
+        document.getElementById('hiddenSearchInput').value = query;
+        document.querySelectorAll('#ledgerDataTable tbody tr.ledger-data-row').forEach(function (row) {
+            row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
         });
+    }
+
+    function openDetailArsipByKey(key) {
+        const item = LEDGER_ITEMS_MAP[key];
+        if (!item) return;
+
+        document.getElementById('arsipModalAgenda').textContent = item.no_agenda;
+        document.getElementById('arsipModalNomor').textContent = item.nomor_naskah;
+        document.getElementById('arsipModalPerihal').textContent = item.perihal;
+        document.getElementById('arsipModalPihak').textContent = item.pihak_utama + ' • ' + item.pihak_sub;
+        document.getElementById('arsipModalTanggal').textContent = 'Tanggal Naskah: ' + item.tanggal_display;
+
+        const katBadge = document.getElementById('arsipModalKategoriBadge');
+        katBadge.textContent = item.kategori_label;
+        katBadge.style.backgroundColor = item.kategori_badge_bg;
+        katBadge.style.color = item.kategori_badge_color;
+
+        document.getElementById('arsipModalBidangBadge').textContent = 'Kode ' + item.kode_bidang + ' - ' + item.nama_bidang;
+
+        const stBadge = document.getElementById('arsipModalStatusBadge');
+        stBadge.textContent = item.status_label;
+        stBadge.style.backgroundColor = item.status_badge_bg;
+        stBadge.style.color = item.status_badge_color;
+
+        // TTE Box (Tahap 4A Integration)
+        const tteBox = document.getElementById('arsipModalTteBox');
+        if (item.status_raw === 'ttd_kadin' && item.tte_token_uuid) {
+            tteBox.classList.remove('d-none');
+            document.getElementById('arsipModalUuid').textContent = item.tte_token_uuid;
+            document.getElementById('arsipModalSignedInfo').textContent = 'Disahkan oleh: ' + (item.penandatangan_nama || 'Kepala Dinas') + ' (' + (item.signed_at_display || '-') + ')';
+            document.getElementById('arsipModalVerifyLink').href = item.verify_url || '/verifikasi-dokumen';
+            document.getElementById('arsipModalDownloadPdfLink').href = item.unduh_tte_url || '#';
+        } else {
+            tteBox.classList.add('d-none');
+        }
+
+        // Lampiran Button
+        const fileBtn = document.getElementById('arsipModalFileLampiranBtn');
+        if (item.file_url) {
+            fileBtn.classList.remove('d-none');
+            fileBtn.href = item.file_url;
+        } else {
+            fileBtn.classList.add('d-none');
+        }
+
+        // Disposisi vs Timeline Section
+        const dispSec = document.getElementById('arsipModalDisposisiSection');
+        const tlSec = document.getElementById('arsipModalTimelineSection');
+
+        if (item.jenis === 'surat_masuk') {
+            dispSec.classList.remove('d-none');
+            tlSec.classList.add('d-none');
+            const dispContent = document.getElementById('arsipModalDisposisiContent');
+            if (item.disposisi_detail) {
+                const d = item.disposisi_detail;
+                dispContent.innerHTML = `
+                    <div class="fw-bold text-primary mb-1">Diteruskan ke: ${d.unit}</div>
+                    <div class="text-dark">Penerima: <strong>${d.penerima}</strong> &bull; Tanggal Terima: ${d.tanggal_menerima}</div>
+                    <div class="text-secondary mt-1">Sifat: <strong>${d.sifat}</strong> &bull; Instruksi: ${d.instruksi}</div>
+                    <div class="p-2 rounded-2 bg-white border mt-2 text-dark fst-italic">"${d.catatan_kadin}"</div>
+                    <div class="text-secondary mt-2" style="font-size: 0.72rem;">Pejabat Pendisposisi: <strong>${d.pejabat_kadin}</strong> &bull; Status: <strong>${d.status_disposisi}</strong></div>
+                `;
+            } else {
+                dispContent.innerHTML = '<div class="text-secondary">Surat masuk ini belum memiliki catatan disposisi Kepala Dinas.</div>';
+            }
+        } else {
+            dispSec.classList.add('d-none');
+            tlSec.classList.remove('d-none');
+            const tlContainer = document.getElementById('arsipModalTimelineContainer');
+            tlContainer.innerHTML = '';
+
+            const logs = Array.isArray(item.logs) ? item.logs : [];
+            if (logs.length === 0) {
+                tlContainer.innerHTML = '<div class="text-secondary">Belum ada riwayat log verifikasi tercatat.</div>';
+            } else {
+                logs.forEach(log => {
+                    const isRevisi = log.status_aksi === 'revisi';
+                    const dotBg = isRevisi ? '#FEE2E2' : '#DCFCE7';
+                    const dotColor = isRevisi ? '#DC2626' : '#16A34A';
+                    const icon = isRevisi ? 'bi-arrow-counterclockwise' : 'bi-check-lg';
+
+                    const step = document.createElement('div');
+                    step.className = 'timeline-step';
+                    step.innerHTML = `
+                        <div class="timeline-dot" style="background-color: ${dotBg}; color: ${dotColor};">
+                            <i class="bi ${icon}"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark" style="font-size: 0.8rem;">${log.tahap_label}</span>
+                            <span class="text-secondary doc-number-mono" style="font-size: 0.7rem;">${log.waktu}</span>
+                        </div>
+                        <div class="text-dark fw-medium" style="font-size: 0.75rem;">${log.verifikator_nama}</div>
+                        <div class="text-secondary" style="font-size: 0.74rem;">${log.catatan || '-'}</div>
+                    `;
+                    tlContainer.appendChild(step);
+                });
+            }
+        }
+
+        new bootstrap.Modal(document.getElementById('modalDetailArsip')).show();
     }
 </script>
 </body>
