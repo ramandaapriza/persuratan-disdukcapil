@@ -6,254 +6,12 @@
     <title>Portal Resmi Verifikasi TTE - Disdukcapil Kabupaten OKI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --color-slate-50: #F8FAFC;
-            --color-slate-100: #F1F5F9;
-            --color-slate-200: #E2E8F0;
-            --color-slate-500: #64748B;
-            --color-slate-700: #334155;
-            --color-slate-900: #0F172A;
-            --color-gov-navy: #0B2545;
-            --color-blue-600: #2563EB;
-            --color-blue-700: #1D4ED8;
-            --color-emerald-50: #ECFDF5;
-            --color-emerald-100: #D1FAE5;
-            --color-emerald-500: #10B981;
-            --color-emerald-600: #059669;
-            --color-emerald-700: #047857;
-            --color-rose-50: #FFF1F2;
-            --color-rose-600: #E11D48;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-6: 1.5rem;
-            --radius-md: 0.625rem;
-            --radius-lg: 1rem;
-            --radius-xl: 1.25rem;
-            --shadow-soft: 0 4px 24px -4px rgba(15, 23, 42, 0.06), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
-            --shadow-elevated: 0 12px 32px -8px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
-            --color-background: var(--color-slate-50);
-            --color-foreground: var(--color-slate-900);
-            --color-primary: var(--color-blue-600);
-            --color-verified: var(--color-emerald-600);
-            --card-bg: #FFFFFF;
-            --card-border: var(--color-slate-200);
-            --card-radius: var(--radius-lg);
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--color-background);
-            color: var(--color-foreground);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .gov-navbar {
-            background: linear-gradient(90deg, #091E3A 0%, #0F2C59 50%, #1E3A8A 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 4px 20px rgba(9, 30, 58, 0.12);
-        }
-
-        .portal-lencana {
-            background-color: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(52, 211, 153, 0.35);
-            color: #6EE7B7;
-            font-size: 0.76rem;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            padding: 0.45rem 0.9rem;
-            border-radius: 50rem;
-        }
-
-        .hero-verification-card {
-            background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
-            border: 1px solid var(--card-border);
-            border-top: 4px solid var(--color-emerald-500);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-elevated);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-verification-card.unverified {
-            border-top-color: var(--color-rose-600);
-        }
-
-        .hero-verification-card.neutral {
-            border-top-color: var(--color-blue-600);
-        }
-
-        .shield-glow-badge {
-            width: 78px;
-            height: 78px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #D1FAE5 0%, #ECFDF5 70%);
-            border: 2px solid #6EE7B7;
-            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.08), 0 8px 20px rgba(5, 150, 105, 0.18);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--color-emerald-600);
-            font-size: 2.35rem;
-        }
-
-        .shield-glow-badge.unverified {
-            background: radial-gradient(circle, #FFE4E6 0%, #FFF1F2 70%);
-            border-color: #FDA4AF;
-            box-shadow: 0 0 0 8px rgba(225, 29, 72, 0.08), 0 8px 20px rgba(225, 29, 72, 0.16);
-            color: var(--color-rose-600);
-        }
-
-        .shield-glow-badge.neutral {
-            background: radial-gradient(circle, #DBEAFE 0%, #EFF6FF 70%);
-            border-color: #93C5FD;
-            box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.08), 0 8px 20px rgba(37, 99, 235, 0.16);
-            color: var(--color-blue-600);
-        }
-
-        .verified-pill-banner {
-            background-color: var(--color-emerald-50);
-            border: 1.5px solid #6EE7B7;
-            color: var(--color-emerald-700);
-            font-weight: 800;
-            font-size: 0.92rem;
-            letter-spacing: 0.04em;
-            padding: 0.55rem 1.35rem;
-            border-radius: 50rem;
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.12);
-        }
-
-        .unverified-pill-banner {
-            background-color: var(--color-rose-50);
-            border: 1.5px solid #FDA4AF;
-            color: #BE123C;
-            font-weight: 800;
-            font-size: 0.92rem;
-            letter-spacing: 0.04em;
-            padding: 0.55rem 1.35rem;
-            border-radius: 50rem;
-            box-shadow: 0 2px 10px rgba(225, 29, 72, 0.12);
-        }
-
-        .uuid-token-box {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: var(--color-slate-900);
-            color: #38BDF8;
-            border: 1px solid #1E293B;
-            border-radius: var(--radius-md);
-            padding: 0.65rem 1.15rem;
-            font-size: 0.86rem;
-            letter-spacing: 0.03em;
-        }
-
-        .enterprise-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--card-radius);
-            box-shadow: var(--shadow-soft);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .enterprise-card:hover {
-            border-color: #CBD5E1;
-        }
-
-        .data-row {
-            padding: 0.75rem 0;
-            border-bottom: 1px dashed var(--color-slate-200);
-        }
-
-        .data-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .data-label {
-            font-size: 0.76rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--color-slate-500);
-            margin-bottom: 0.2rem;
-        }
-
-        .data-value {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--color-slate-900);
-        }
-
-        .audit-step {
-            position: relative;
-            padding-left: 2.25rem;
-            padding-bottom: 0.95rem;
-        }
-
-        .audit-step:last-child {
-            padding-bottom: 0;
-        }
-
-        .audit-step::before {
-            content: '';
-            position: absolute;
-            left: 11px;
-            top: 24px;
-            bottom: 0;
-            width: 2px;
-            background-color: #A7F3D0;
-        }
-
-        .audit-step:last-child::before {
-            display: none;
-        }
-
-        .audit-dot {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: var(--color-emerald-100);
-            color: var(--color-emerald-700);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-        }
-
-        .btn-enterprise-primary {
-            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            border: none;
-            color: #FFFFFF;
-            font-weight: 600;
-            padding: 0.7rem 1.4rem;
-            border-radius: var(--radius-md);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-            text-decoration: none;
-        }
-
-        .btn-enterprise-primary:hover {
-            background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
-            color: #FFFFFF;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-        }
-
-        .qr-svg-box svg {
-            width: 92px;
-            height: 92px;
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/esurat-modern.css') }}">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 @php
     $state = $searchState ?? 'empty';
     $backUrl = '/login';
@@ -274,7 +32,7 @@
                     <div class="rounded-3 bg-white bg-opacity-10 border border-white border-opacity-25 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
                         <i class="bi bi-shield-shaded text-warning fs-5" aria-hidden="true"></i>
                     </div>
-                    <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;">
+                    <div class="sidebar-brand-icon d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
                         <i class="bi bi-qr-code-scan text-white fs-5" aria-hidden="true"></i>
                     </div>
                 </div>
@@ -310,15 +68,15 @@
 
         @if($state === 'verified' && $dokumen)
             {{-- STATE 1: DOKUMEN DITEMUKAN & SAH BER-TTE KADIN --}}
-            <div class="hero-verification-card p-4 p-lg-5 mb-4 text-center">
+            <div class="hero-verification-card animate-fade-up p-4 p-lg-5 mb-4 text-center">
                 <div class="mb-3">
-                    <span class="shield-glow-badge">
+                    <span class="shield-glow-badge verified-pulse">
                         <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
                     </span>
                 </div>
 
                 <div class="mb-3">
-                    <span class="verified-pill-banner d-inline-flex align-items-center gap-2">
+                    <span class="verified-pill-banner verified-pulse d-inline-flex align-items-center gap-2">
                         <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                         <span>DOKUMEN ASLI &amp; TERVERIFIKASI SAH</span>
                     </span>
@@ -330,7 +88,7 @@
                 </p>
 
                 <div class="d-inline-flex flex-column flex-md-row align-items-center justify-content-center gap-3 p-3 rounded-3 bg-light border">
-                    <div class="bg-white border border-success border-opacity-50 rounded-3 p-1 qr-svg-box shadow-sm">
+                    <div class="bg-white border border-success border-opacity-50 rounded-3 p-1 qr-svg-box qr-scan-box shadow-sm">
                         {!! $dokumen['qr_svg'] !!}
                     </div>
                     <div class="text-start">
@@ -350,7 +108,7 @@
 
             <div class="row g-4 mb-4">
                 <div class="col-12 col-lg-6">
-                    <div class="enterprise-card h-100 p-4">
+                    <div class="enterprise-card animate-fade-up delay-1 h-100 p-4">
                         <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="rounded-2 bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
@@ -416,7 +174,7 @@
                 </div>
 
                 <div class="col-12 col-lg-6">
-                    <div class="enterprise-card h-100 p-4">
+                    <div class="enterprise-card animate-fade-up delay-2 h-100 p-4">
                         <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="rounded-2 bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
@@ -476,15 +234,15 @@
 
         @elseif($state === 'unverified')
             {{-- STATE 2: DOKUMEN TIDAK DITEMUKAN ATAU BELUM SAH BER-TTE --}}
-            <div class="hero-verification-card unverified p-4 p-lg-5 mb-4 text-center">
+            <div class="hero-verification-card unverified animate-fade-up p-4 p-lg-5 mb-4 text-center">
                 <div class="mb-3">
-                    <span class="shield-glow-badge unverified">
+                    <span class="shield-glow-badge unverified status-pulse">
                         <i class="bi bi-shield-fill-exclamation" aria-hidden="true"></i>
                     </span>
                 </div>
 
                 <div class="mb-3">
-                    <span class="unverified-pill-banner d-inline-flex align-items-center gap-2">
+                    <span class="unverified-pill-banner status-pulse d-inline-flex align-items-center gap-2">
                         <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
                         <span>DOKUMEN TIDAK DITEMUKAN / TIDAK TERVERIFIKASI</span>
                     </span>
@@ -503,7 +261,7 @@
 
         @else
             {{-- STATE 3: FORM PENCARIAN BERSIH (BELUM ADA INPUT) --}}
-            <div class="hero-verification-card neutral p-4 p-lg-5 mb-4 text-center">
+            <div class="hero-verification-card neutral animate-fade-up p-4 p-lg-5 mb-4 text-center">
                 <div class="mb-3">
                     <span class="shield-glow-badge neutral">
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
@@ -518,7 +276,7 @@
         @endif
 
         {{-- CARD TINDAKAN UNDUH PDF & FORM PENCARIAN TOKEN / NOMOR SURAT --}}
-        <div class="enterprise-card p-4">
+        <div class="enterprise-card animate-fade-up delay-2 p-4">
             <div class="row g-3 align-items-center justify-content-between">
                 @if($state === 'verified' && $dokumen)
                     <div class="col-12 col-lg-5">
@@ -588,5 +346,6 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/esurat-motion.js') }}"></script>
 </body>
 </html>

@@ -9,174 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --color-slate-50: #F8FAFC;
-            --color-slate-100: #F3F4F6;
-            --color-slate-200: #E5E7EB;
-            --color-slate-500: #6B7280;
-            --color-slate-700: #374151;
-            --color-slate-900: #111827;
-            --color-blue-600: #2563EB;
-            --color-emerald-600: #059669;
-            --color-rose-600: #E11D48;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-            --bg-surface: #FFFFFF;
-            --bg-canvas: var(--color-slate-100);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--color-slate-900);
-        }
-
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background-color: var(--color-slate-900);
-        }
-
-        .sidebar-section-label {
-            font-size: 0.66rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6B7280;
-            padding: 0.85rem 0.9rem 0.35rem;
-        }
-
-        .nav-link-sidebar {
-            color: #9CA3AF;
-            padding: 0.6rem 0.9rem;
-            border-radius: var(--radius-md);
-            font-size: 0.84rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .nav-link-sidebar:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #F9FAFB;
-        }
-
-        .nav-link-sidebar.active {
-            background-color: #1E293B;
-            color: #60A5FA;
-            border: 1px solid rgba(96, 165, 250, 0.15);
-        }
-
-        .surface-card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-        }
-
-        .mini-stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.15rem;
-            flex-shrink: 0;
-        }
-
-        .ledger-tabs .nav-link {
-            color: var(--color-slate-500);
-            font-size: 0.82rem;
-            font-weight: 600;
-            padding: 0.6rem 1rem;
-            border: none;
-            border-bottom: 2px solid transparent;
-            border-radius: 0;
-            cursor: pointer;
-        }
-
-        .ledger-tabs .nav-link:hover {
-            color: var(--color-slate-900);
-        }
-
-        .ledger-tabs .nav-link.active {
-            color: var(--color-blue-600);
-            background-color: transparent;
-            border-bottom-color: var(--color-blue-600);
-        }
-
-        .table-ledger th {
-            font-size: 0.71rem;
-            font-weight: 600;
-            color: var(--color-slate-500);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            background-color: var(--color-slate-50);
-            padding: 0.85rem 0.9rem;
-            border-bottom: 1px solid var(--color-slate-200);
-            white-space: nowrap;
-        }
-
-        .table-ledger td {
-            padding: 0.95rem 0.9rem;
-            vertical-align: middle;
-            border-bottom: 1px solid #F3F4F6;
-            font-size: 0.82rem;
-        }
-
-        .table-ledger tbody tr:hover {
-            background-color: #F8FAFC;
-        }
-
-        .doc-number-mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }
-
-        .timeline-step {
-            position: relative;
-            padding-left: 2.3rem;
-            padding-bottom: 1rem;
-        }
-
-        .timeline-step:last-child {
-            padding-bottom: 0;
-        }
-
-        .timeline-step::before {
-            content: '';
-            position: absolute;
-            left: 11px;
-            top: 24px;
-            bottom: 0;
-            width: 2px;
-            background-color: var(--color-slate-200);
-        }
-
-        .timeline-step:last-child::before {
-            display: none;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/esurat-modern.css') }}">
 </head>
 <body>
 @php
@@ -218,8 +51,8 @@
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
-        <div class="p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25">
-            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <div class="p-3 d-flex align-items-center gap-3 sidebar-brand-header">
+            <div class="sidebar-brand-icon text-white d-flex align-items-center justify-content-center">
                 <i class="bi bi-envelope-paper-fill fs-5" aria-hidden="true"></i>
             </div>
             <div>
@@ -249,7 +82,7 @@
                         <span>Riwayat &amp; Pantauan Naskah</span>
                     </span>
                     @if(($sidebarRevisiCount ?? 0) > 0)
-                        <span class="badge rounded-pill bg-danger text-white fw-bold" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
+                        <span class="badge rounded-pill bg-danger text-white fw-bold status-pulse" style="font-size: 0.68rem;">{{ $sidebarRevisiCount }}</span>
                     @endif
                 </a>
 
@@ -287,8 +120,11 @@
                         <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
                         <span>Verifikasi Hierarki Naskah</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">
-                        {{ auth()->user()->role === 'sekdin' ? ($verifTahap2Count ?? 0) : ($verifTahap1Count ?? 0) }}
+                    @php
+                        $verifBadgeCount = auth()->user()->role === 'sekdin' ? ($verifTahap2Count ?? 0) : ($verifTahap1Count ?? 0);
+                    @endphp
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold {{ $verifBadgeCount > 0 ? 'status-pulse' : '' }}" style="font-size: 0.68rem;">
+                        {{ $verifBadgeCount }}
                     </span>
                 </a>
 
@@ -326,14 +162,14 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $menungguTteCount ?? 0 }}</span>
+                    <span class="badge rounded-pill bg-danger {{ ($menungguTteCount ?? 0) > 0 ? 'status-pulse' : '' }}" style="font-size: 0.68rem;">{{ $menungguTteCount ?? 0 }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
                         <i class="bi bi-inbox" aria-hidden="true"></i>
                         <span>Disposisi Surat Masuk</span>
                     </span>
-                    <span class="badge rounded-pill bg-warning text-dark fw-bold" style="font-size: 0.68rem;">{{ $menungguDisposisiCount ?? 0 }}</span>
+                    <span class="badge rounded-pill bg-warning text-dark fw-bold {{ ($menungguDisposisiCount ?? 0) > 0 ? 'status-pulse' : '' }}" style="font-size: 0.68rem;">{{ $menungguDisposisiCount ?? 0 }}</span>
                 </a>
 
                 <div class="sidebar-section-label">ARSIP &amp; PELAPORAN</div>
@@ -366,7 +202,7 @@
             @endif
         </div>
 
-        <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
+        <div class="p-3 sidebar-footer-panel">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
                     {{ $userInitials }}
@@ -386,7 +222,7 @@
     </aside>
 
     <div class="flex-grow-1 d-flex flex-column min-vh-100" style="margin-left: 260px;">
-        <header class="bg-white border-bottom px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
+        <header class="topbar-glass px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
             <div class="small">
                 <span class="text-secondary">Disdukcapil OKI</span>
                 <span class="text-secondary mx-1">/</span>
@@ -441,7 +277,7 @@
             @endif
 
             {{-- FORM FILTER DINAMIS & EKSPOR LAPORAN --}}
-            <div class="surface-card p-3 px-4 mb-4">
+            <div class="surface-card p-3 px-4 mb-4 animate-fade-up">
                 <form id="formFilterBukuBesar" action="{{ route('buku.besar') }}" method="GET">
                     <div class="d-flex flex-column flex-xl-row align-items-xl-end justify-content-between gap-3">
                         <div class="row g-3 flex-grow-1">
@@ -524,10 +360,10 @@
             {{-- 4 MINI-CARD REAL-TIME DARI DATABASE --}}
             <div class="row g-3 mb-4">
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('semua')">
+                    <div class="surface-card surface-card-interactive animate-fade-up delay-1 p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('semua')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Agenda Persuratan</div>
-                            <div class="fs-4 fw-bold text-dark lh-1 mb-1">{{ $totalAgenda ?? 0 }}</div>
+                            <div class="fs-4 fw-bold text-dark lh-1 mb-1 metric-value" data-countup="{{ $totalAgenda ?? 0 }}">{{ $totalAgenda ?? 0 }}</div>
                             <div class="text-primary fw-medium" style="font-size: 0.72rem;">
                                 <i class="bi bi-journal-check me-1" aria-hidden="true"></i>{{ $totalSuratMasuk ?? 0 }} Masuk &bull; {{ ($totalSuratKeluar ?? 0) + ($totalSppd ?? 0) + ($totalBeritaAcara ?? 0) }} Keluar/Naskah
                             </div>
@@ -539,10 +375,10 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('surat_keluar')">
+                    <div class="surface-card surface-card-interactive animate-fade-up delay-2 p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('surat_keluar')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Surat Keluar Ber-TTE</div>
-                            <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $totalSuratKeluarTte ?? 0 }}</div>
+                            <div class="fs-4 fw-bold text-success lh-1 mb-1 metric-value" data-countup="{{ $totalSuratKeluarTte ?? 0 }}">{{ $totalSuratKeluarTte ?? 0 }}</div>
                             <div class="text-success fw-medium" style="font-size: 0.72rem;">
                                 <i class="bi bi-qr-code me-1" aria-hidden="true"></i>Dari {{ $totalSuratKeluar ?? 0 }} total surat keluar
                             </div>
@@ -554,10 +390,10 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('sppd')">
+                    <div class="surface-card surface-card-interactive animate-fade-up delay-3 p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('sppd')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total SPPD Terbit</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $totalSppd ?? 0 }}</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1 metric-value" style="color: #D97706;" data-countup="{{ $totalSppd ?? 0 }}">{{ $totalSppd ?? 0 }}</div>
                             <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
                                 <i class="bi bi-geo-alt-fill me-1" aria-hidden="true"></i>Dinas Dalam &amp; Luar Daerah
                             </div>
@@ -569,10 +405,10 @@
                 </div>
 
                 <div class="col-12 col-sm-6 col-xl-3">
-                    <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('berita_acara')">
+                    <div class="surface-card surface-card-interactive animate-fade-up delay-4 p-3 h-100 d-flex align-items-center justify-content-between" style="cursor: pointer;" onclick="selectLedgerTab('berita_acara')">
                         <div>
                             <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Total Berita Acara</div>
-                            <div class="fs-4 fw-bold lh-1 mb-1" style="color: #7C3AED;">{{ $totalBeritaAcara ?? 0 }}</div>
+                            <div class="fs-4 fw-bold lh-1 mb-1 metric-value" style="color: #7C3AED;" data-countup="{{ $totalBeritaAcara ?? 0 }}">{{ $totalBeritaAcara ?? 0 }}</div>
                             <div class="fw-medium" style="font-size: 0.72rem; color: #6D28D9;">
                                 <i class="bi bi-file-earmark-ruled me-1" aria-hidden="true"></i>BAST &amp; Rekonsiliasi SIAK
                             </div>
@@ -584,7 +420,7 @@
                 </div>
             </div>
 
-            <div class="surface-card overflow-hidden">
+            <div class="surface-card overflow-hidden animate-fade-up delay-3">
                 <div class="px-4 pt-3 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                     <ul class="nav nav-tabs ledger-tabs border-0" id="ledgerTabNav">
                         <li class="nav-item">
@@ -973,5 +809,6 @@
         new bootstrap.Modal(document.getElementById('modalDetailArsip')).show();
     }
 </script>
+<script src="{{ asset('js/esurat-motion.js') }}"></script>
 </body>
 </html>
