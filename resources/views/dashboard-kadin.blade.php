@@ -717,8 +717,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     function selectKadinTab(jenis, btnEl) {
         const nav = document.getElementById('kadinTabNav');
         nav.setAttribute('data-active-jenis', jenis);

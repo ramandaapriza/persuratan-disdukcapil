@@ -976,8 +976,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     function updateAutoNomorSurat() {
         const kode = document.getElementById('kodeBidangSelect').value || '400';
         const urut = document.getElementById('nomorUrutKeluar').value || '2765';

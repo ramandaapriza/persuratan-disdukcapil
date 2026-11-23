@@ -1134,8 +1134,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     const NASKAH_MAP = @json($semuaNaskahKeluar->keyBy('key'));
     let activeKategori = @json($initialKategoriFilter ?: 'all_keluar');
 

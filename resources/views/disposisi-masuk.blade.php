@@ -865,8 +865,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     function selectUnitDisposisi(cardEl, kodeBidang, defaultRecipient) {
         document.querySelectorAll('#unitCardsContainer .unit-option-card').forEach(function(el) {
             el.classList.remove('selected');

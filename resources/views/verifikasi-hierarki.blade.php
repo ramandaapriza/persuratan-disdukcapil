@@ -1206,8 +1206,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     const ANTREAN_DATA = @json($antreanKonsep->keyBy('key'));
     const CURRENT_USER_ROLE = @json($userRole);
     const CURRENT_USER_NAME = @json($userName);

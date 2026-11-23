@@ -411,8 +411,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     function togglePasswordVisibility() {
         const input = document.getElementById('kataSandiPegawai');
         const icon = document.getElementById('eyeToggleIcon');
@@ -430,7 +428,6 @@
         const passInput = document.getElementById('kataSandiPegawai');
         if (kredInput) kredInput.value = nip;
         if (passInput) passInput.value = 'password123';
-        localStorage.removeItem('esurat_locked_role');
         const form = document.getElementById('singleGateLoginForm');
         if (form) {
             form.submit();

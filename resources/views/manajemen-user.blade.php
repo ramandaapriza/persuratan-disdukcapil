@@ -808,8 +808,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    localStorage.removeItem('esurat_locked_role');
-
     function filterUserTable() {
         const q = (document.getElementById('userSearchInput').value || '').toLowerCase();
         const role = document.getElementById('userRoleFilter').value;
