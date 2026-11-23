@@ -9,143 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --color-slate-50: #F8FAFC;
-            --color-slate-100: #F3F4F6;
-            --color-slate-200: #E5E7EB;
-            --color-slate-500: #6B7280;
-            --color-slate-700: #374151;
-            --color-slate-900: #111827;
-            --color-blue-600: #2563EB;
-            --color-emerald-600: #059669;
-            --color-rose-600: #E11D48;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-            --bg-surface: #FFFFFF;
-            --bg-canvas: var(--color-slate-100);
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--color-slate-900);
-        }
-
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background-color: var(--color-slate-900);
-        }
-
-        .sidebar-section-label {
-            font-size: 0.66rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6B7280;
-            padding: 0.85rem 0.9rem 0.35rem;
-        }
-
-        .nav-link-sidebar {
-            color: #9CA3AF;
-            padding: 0.6rem 0.9rem;
-            border-radius: var(--radius-md);
-            font-size: 0.84rem;
-            font-weight: 500;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background-color 0.15s ease, color 0.15s ease;
-        }
-
-        .nav-link-sidebar:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: #F9FAFB;
-        }
-
-        .nav-link-sidebar.active {
-            background-color: #1E293B;
-            color: #60A5FA;
-            border: 1px solid rgba(96, 165, 250, 0.15);
-        }
-
-        .surface-card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--color-slate-200);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-        }
-
-        .welcome-banner {
-            background: linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1d4ed8 100%);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-        }
-
-        .mini-stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.15rem;
-            flex-shrink: 0;
-        }
-
-        .ledger-tabs .nav-link {
-            color: var(--color-slate-500);
-            font-size: 0.82rem;
-            font-weight: 600;
-            padding: 0.6rem 1rem;
-            border: none;
-            border-bottom: 2px solid transparent;
-            border-radius: 0;
-            cursor: pointer;
-        }
-
-        .ledger-tabs .nav-link:hover {
-            color: var(--color-slate-900);
-        }
-
-        .ledger-tabs .nav-link.active {
-            color: var(--color-blue-600);
-            background-color: transparent;
-            border-bottom-color: var(--color-blue-600);
-        }
-
-        .table-ledger th {
-            font-size: 0.71rem;
-            font-weight: 600;
-            color: var(--color-slate-500);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            background-color: var(--color-slate-50);
-            padding: 0.85rem 0.9rem;
-            border-bottom: 1px solid var(--color-slate-200);
-            white-space: nowrap;
-        }
-
-        .table-ledger td {
-            padding: 0.95rem 0.9rem;
-            vertical-align: middle;
-            border-bottom: 1px solid #F3F4F6;
-            font-size: 0.82rem;
-        }
-
-        .table-ledger tbody tr:hover {
-            background-color: #F8FAFC;
-        }
-
-        .doc-number-mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/esurat-modern.css') }}">
 </head>
 <body>
 @php
@@ -181,8 +45,8 @@
 
 <div class="d-flex">
     <aside class="sidebar d-flex flex-column flex-shrink-0 position-fixed top-0 bottom-0 start-0 z-3">
-        <div class="p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25">
-            <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+        <div class="p-3 d-flex align-items-center gap-3 sidebar-brand-header">
+            <div class="sidebar-brand-icon text-white d-flex align-items-center justify-content-center">
                 <i class="bi bi-envelope-paper-fill fs-5" aria-hidden="true"></i>
             </div>
             <div>
@@ -233,7 +97,7 @@
                         <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                         <span>Validasi &amp; TTE QR</span>
                     </span>
-                    <span class="badge rounded-pill bg-danger" style="font-size: 0.68rem;">{{ $badgeTte }}</span>
+                    <span class="badge rounded-pill bg-danger {{ $badgeTte > 0 ? 'status-pulse' : '' }}" style="font-size: 0.68rem;">{{ $badgeTte }}</span>
                 </a>
                 <a href="/kadin/disposisi" class="nav-link-sidebar">
                     <span class="d-flex align-items-center gap-3">
@@ -273,7 +137,7 @@
             @endif
         </div>
 
-        <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #0B0F19;">
+        <div class="p-3 sidebar-footer-panel">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.75rem;">
                     {{ $userInitials }}
@@ -293,28 +157,28 @@
     </aside>
 
     <div class="flex-grow-1 d-flex flex-column min-vh-100" style="margin-left: 260px;">
-        <header class="bg-white border-bottom px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
+        <header class="topbar-glass px-4 py-2 d-flex align-items-center justify-content-between sticky-top" style="height: 58px;">
             <div class="small">
                 <span class="text-secondary">Disdukcapil OKI</span>
                 <span class="text-secondary mx-1">/</span>
                 <span class="text-secondary">Menu Utama Pimpinan</span>
                 <span class="text-secondary mx-1">/</span>
-                <span class="text-primary fw-medium">Dashboard Eksekutif</span>
+                <span class="text-primary fw-semibold">Dashboard Eksekutif</span>
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <div class="border rounded-2 px-3 py-1 bg-light text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
+                <div class="border rounded-2 px-3 py-1 bg-white bg-opacity-75 text-secondary d-none d-md-flex align-items-center gap-2" style="font-size: 0.78rem;">
                     <i class="bi bi-calendar3 text-primary" aria-hidden="true"></i>
                     <span>{{ now()->translatedFormat('l, d F Y') }}</span>
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-sm border rounded-pill px-2 py-1 d-flex align-items-center gap-2 bg-white shadow-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="rounded-circle {{ $avatarBadgeClass }} fw-bold d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.68rem;">{{ $userInitials }}</span>
                         <span class="text-dark fw-medium" style="font-size: 0.76rem;">{{ $userName }}</span>
                         <i class="bi bi-chevron-down text-secondary" style="font-size: 0.65rem;" aria-hidden="true"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 small" style="min-width: 230px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 small rounded-3" style="min-width: 230px;">
                         <li class="px-3 py-2 border-bottom">
                             <div class="fw-bold text-dark">{{ $userName }}</div>
                             <div class="text-secondary" style="font-size: 0.7rem;">{{ $userJabatan }}</div>
@@ -348,7 +212,7 @@
             @endif
 
             @if (isset($errors) && $errors->any())
-                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
+                <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 border-0 shadow-sm" data-no-autodismiss="true" role="alert" style="background-color: #FEE2E2; color: #B91C1C; font-size: 0.8rem;">
                     <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Peringatan Validasi:</div>
                     <ul class="mb-0 ps-3">
                         @foreach ($errors->all() as $err)
@@ -359,12 +223,12 @@
                 </div>
             @endif
 
-            <div class="welcome-banner p-4 mb-4 text-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+            <div class="welcome-banner p-4 mb-4 text-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 animate-fade-up">
                 <div style="max-width: 680px;">
-                    <span class="badge rounded-pill px-3 py-1 mb-2 fw-medium d-inline-flex align-items-center gap-1" style="background-color: rgba(59, 130, 246, 0.25); color: #93C5FD; border: 1px solid rgba(147, 197, 253, 0.3); font-size: 0.72rem;">
+                    <span class="badge rounded-pill px-3 py-1 mb-2 fw-medium d-inline-flex align-items-center gap-1" style="background-color: rgba(59, 130, 246, 0.25); color: #93C5FD; border: 1px solid rgba(147, 197, 253, 0.35); font-size: 0.72rem;">
                         <i class="bi bi-shield-check" aria-hidden="true"></i> Otorisasi Tanda Tangan Elektronik Terpusat
                     </span>
-                    <h4 class="fw-bold mb-2">Selamat Datang, {{ $userName }}</h4>
+                    <h4 class="heading-font fw-bold mb-2">Selamat Datang, {{ $userName }}</h4>
                     <p class="mb-0 text-white text-opacity-75" style="font-size: 0.82rem; line-height: 1.55;">
                         Pantau seluruh antrean naskah dinas keluar, SPPD, berita acara, serta instruksi disposisi surat masuk yang telah diverifikasi berjenjang oleh Kasubbag Umpeg dan Sekretaris Dinas.
                     </p>
@@ -389,46 +253,46 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-xl-3">
+                <div class="col-12 col-sm-6 col-xl-3 animate-fade-up delay-1">
                     <a href="/kadin/validasi" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Menunggu TTE Kadin</div>
-                                <div class="fs-4 fw-bold text-danger lh-1 mb-1">{{ $badgeTte }}</div>
+                                <div class="fs-4 fw-bold text-danger lh-1 mb-1 metric-value" data-countup="{{ $badgeTte }}">{{ $badgeTte }}</div>
                                 <div class="text-danger fw-medium" style="font-size: 0.72rem;">
                                     <i class="bi bi-exclamation-circle-fill me-1" aria-hidden="true"></i>Siap dibubuhkan QR Code
                                 </div>
                             </div>
-                            <div class="mini-stat-icon" style="background-color: #FEE2E2; color: #DC2626;">
+                            <div class="mini-stat-icon {{ $badgeTte > 0 ? 'status-pulse' : '' }}" style="background-color: #FEE2E2; color: #DC2626;">
                                 <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
                             </div>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl-3">
+                <div class="col-12 col-sm-6 col-xl-3 animate-fade-up delay-2">
                     <a href="/kadin/disposisi" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Menunggu Disposisi Masuk</div>
-                                <div class="fs-4 fw-bold lh-1 mb-1" style="color: #D97706;">{{ $badgeDisposisi }}</div>
+                                <div class="fs-4 fw-bold lh-1 mb-1 metric-value" style="color: #D97706;" data-countup="{{ $badgeDisposisi }}">{{ $badgeDisposisi }}</div>
                                 <div class="fw-medium" style="font-size: 0.72rem; color: #B45309;">
                                     <i class="bi bi-inbox-fill me-1" aria-hidden="true"></i>Diterima Ajudan Kadin
                                 </div>
                             </div>
-                            <div class="mini-stat-icon" style="background-color: #FEF3C7; color: #D97706;">
+                            <div class="mini-stat-icon {{ $badgeDisposisi > 0 ? 'status-pulse' : '' }}" style="background-color: #FEF3C7; color: #D97706;">
                                 <i class="bi bi-envelope-arrow-down-fill" aria-hidden="true"></i>
                             </div>
                         </div>
                     </a>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl-3">
+                <div class="col-12 col-sm-6 col-xl-3 animate-fade-up delay-3">
                     <a href="/verifikasi-dokumen" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">Dokumen Selesai TTE</div>
-                                <div class="fs-4 fw-bold text-success lh-1 mb-1">{{ $countSelesaiTte ?? 0 }}</div>
+                                <div class="fs-4 fw-bold text-success lh-1 mb-1 metric-value" data-countup="{{ $countSelesaiTte ?? 0 }}">{{ $countSelesaiTte ?? 0 }}</div>
                                 <div class="text-success fw-medium" style="font-size: 0.72rem;">
                                     <i class="bi bi-patch-check-fill me-1" aria-hidden="true"></i>Tervalidasi Token UUID
                                 </div>
@@ -440,12 +304,12 @@
                     </a>
                 </div>
 
-                <div class="col-12 col-sm-6 col-xl-3">
+                <div class="col-12 col-sm-6 col-xl-3 animate-fade-up delay-4">
                     <a href="/buku-besar" class="text-decoration-none">
                         <div class="surface-card p-3 h-100 d-flex align-items-center justify-content-between">
                             <div>
                                 <div class="text-secondary fw-medium mb-1" style="font-size: 0.76rem;">SPPD &amp; Berita Acara Terbit</div>
-                                <div class="fs-4 fw-bold text-primary lh-1 mb-1">{{ $totalSppdBa ?? 0 }}</div>
+                                <div class="fs-4 fw-bold text-primary lh-1 mb-1 metric-value" data-countup="{{ $totalSppdBa ?? 0 }}">{{ $totalSppdBa ?? 0 }}</div>
                                 <div class="text-primary fw-medium" style="font-size: 0.72rem;">
                                     <i class="bi bi-briefcase-fill me-1" aria-hidden="true"></i>{{ $totalSppd ?? 0 }} SPPD &bull; {{ $totalBeritaAcara ?? 0 }} Berita Acara
                                 </div>
@@ -458,10 +322,10 @@
                 </div>
             </div>
 
-            <div class="surface-card overflow-hidden">
+            <div class="surface-card overflow-hidden animate-fade-up delay-3">
                 <div class="p-3 px-4 border-bottom d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3">
                     <div>
-                        <h6 class="fw-bold text-dark mb-1">Antrean Dokumen Membutuhkan Tanda Tangan Elektronik (Status: <code>valid_sekdin</code>)</h6>
+                        <h6 class="heading-font fw-bold text-dark mb-1">Antrean Dokumen Membutuhkan Tanda Tangan Elektronik (Status: <code>valid_sekdin</code>)</h6>
                         <div class="text-secondary" style="font-size: 0.76rem;">Seluruh dokumen telah melewati verifikasi Kasubbag Umpeg &amp; Sekretaris Dinas serta siap diotorisasi TTE QR Code.</div>
                     </div>
                     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -716,6 +580,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/esurat-motion.js') }}" defer></script>
 <script>
     function selectKadinTab(jenis, btnEl) {
         const nav = document.getElementById('kadinTabNav');
