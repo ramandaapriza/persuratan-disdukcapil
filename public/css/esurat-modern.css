@@ -1,0 +1,450 @@
+/**
+ * E-Surat Disdukcapil Kabupaten Ogan Komering Ilir (OKI)
+ * Design System: Executive Midnight Glass (Three-Layer CSS Token Architecture)
+ * Stack: Pure HTML5 + Bootstrap 5.3 CDN + Custom CSS Tokens (No Tailwind)
+ */
+
+:root {
+    /* 1. Primitive Tokens */
+    --color-slate-50: #F8FAFC;
+    --color-slate-100: #F1F5F9;
+    --color-slate-200: #E2E8F0;
+    --color-slate-300: #CBD5E1;
+    --color-slate-400: #94A3B8;
+    --color-slate-500: #64748B;
+    --color-slate-600: #475569;
+    --color-slate-700: #334155;
+    --color-slate-800: #1E293B;
+    --color-slate-900: #0F172A;
+    --color-slate-950: #090D16;
+
+    --color-gov-navy: #091E3A;
+    --color-blue-400: #60A5FA;
+    --color-blue-500: #3B82F6;
+    --color-blue-600: #2563EB;
+    --color-blue-700: #1D4ED8;
+    --color-blue-900: #1E3A8A;
+
+    --color-emerald-50: #ECFDF5;
+    --color-emerald-100: #D1FAE5;
+    --color-emerald-500: #10B981;
+    --color-emerald-600: #059669;
+    --color-emerald-700: #047857;
+
+    --color-rose-50: #FFF1F2;
+    --color-rose-100: #FFE4E6;
+    --color-rose-500: #F43F5E;
+    --color-rose-600: #E11D48;
+    --color-rose-700: #BE123C;
+
+    --color-amber-50: #FFFBEB;
+    --color-amber-100: #FEF3C7;
+    --color-amber-500: #F59E0B;
+    --color-amber-600: #D97706;
+
+    /* 2. Semantic & Layout Tokens */
+    --bg-surface: #FFFFFF;
+    --bg-canvas: #F1F5F9;
+    --bg-glass-topbar: rgba(255, 255, 255, 0.82);
+    --sidebar-width: 260px;
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.625rem;
+    --radius-lg: 1rem;       /* 16px Bento Card Radius */
+    --radius-xl: 1.25rem;
+
+    --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+    --shadow-soft: 0 4px 24px -4px rgba(15, 23, 42, 0.06), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+    --shadow-hover: 0 14px 28px -6px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(37, 99, 235, 0.07);
+    --shadow-elevated: 0 18px 38px -10px rgba(15, 23, 42, 0.16), 0 4px 14px -2px rgba(15, 23, 42, 0.06);
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: 160ms var(--ease-out-expo);
+    --transition-base: 240ms var(--ease-out-expo);
+}
+
+/* Base Typography & Canvas */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--color-slate-900);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.heading-font,
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    letter-spacing: -0.015em;
+}
+
+.doc-number-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-value,
+[data-countup] {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.025em;
+}
+
+/* ==========================================================================
+   1. Executive Midnight Glass Sidebar
+   ========================================================================== */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0F172A 0%, #131D33 55%, #1E293B 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.16);
+}
+
+.sidebar-brand-header {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.sidebar-brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 0.65rem;
+    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-slate-400);
+    padding: 0.9rem 0.9rem 0.35rem;
+}
+
+.nav-link-sidebar {
+    color: #94A3B8;
+    padding: 0.62rem 0.9rem;
+    border-radius: 0.65rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid transparent;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                transform var(--transition-fast),
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.nav-link-sidebar:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #F8FAFC;
+    transform: translateX(2px);
+}
+
+.nav-link-sidebar.active {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0.08) 100%);
+    color: #60A5FA;
+    font-weight: 600;
+    border-color: rgba(59, 130, 246, 0.28);
+    box-shadow: 0 4px 14px -2px rgba(59, 130, 246, 0.18), inset 3px 0 0 #3B82F6;
+}
+
+.sidebar-footer-panel {
+    background: rgba(9, 13, 24, 0.72) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ==========================================================================
+   2. Frosted Glass Topbar Header
+   ========================================================================== */
+header.sticky-top,
+.topbar-glass {
+    background: var(--bg-glass-topbar) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.03);
+}
+
+/* ==========================================================================
+   3. Bento Surface Cards & Executive Welcome Banner
+   ========================================================================== */
+.surface-card {
+    background-color: var(--bg-surface);
+    border: 1px solid rgba(226, 232, 240, 0.92);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-base),
+                box-shadow var(--transition-base),
+                border-color var(--transition-base);
+}
+
+a.text-decoration-none > .surface-card:hover,
+.surface-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(147, 197, 253, 0.75);
+}
+
+.welcome-banner {
+    background:
+        radial-gradient(circle at 88% 18%, rgba(96, 165, 250, 0.28) 0%, transparent 48%),
+        radial-gradient(circle at 12% 90%, rgba(37, 99, 235, 0.22) 0%, transparent 45%),
+        linear-gradient(135deg, #0F172A 0%, #1E3A8A 55%, #2563EB 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.22);
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: transform var(--transition-fast);
+}
+
+a.text-decoration-none > .surface-card:hover .mini-stat-icon,
+.surface-card-interactive:hover .mini-stat-icon {
+    transform: scale(1.06);
+}
+
+/* ==========================================================================
+   4. Split-Screen Login (Executive Midnight Glass Branding Panel)
+   ========================================================================== */
+.branding-panel {
+    background:
+        radial-gradient(circle at 18% 15%, rgba(59, 130, 246, 0.24) 0%, transparent 45%),
+        radial-gradient(circle at 85% 82%, rgba(16, 185, 129, 0.16) 0%, transparent 48%),
+        linear-gradient(155deg, #091326 0%, #0F172A 46%, #1E3A8A 100%);
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-lencana {
+    background-color: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(52, 211, 153, 0.38);
+    color: #6EE7B7;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.42rem 0.9rem;
+    border-radius: 50rem;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.12);
+}
+
+.security-architecture-box {
+    background-color: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(147, 197, 253, 0.22);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.28);
+}
+
+.security-item {
+    background-color: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.security-item:hover {
+    background-color: rgba(255, 255, 255, 0.09);
+    border-color: rgba(147, 197, 253, 0.3);
+    transform: translateX(2px);
+}
+
+.security-note-box {
+    background-color: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+}
+
+.btn-enterprise-primary {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-weight: 600;
+    padding: 0.72rem 1.25rem;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.btn-enterprise-primary:hover,
+.btn-enterprise-primary:focus {
+    background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.36);
+}
+
+/* ==========================================================================
+   5. Ledger & Agenda Tables
+   ========================================================================== */
+.table-ledger th {
+    font-size: 0.71rem;
+    font-weight: 700;
+    color: var(--color-slate-500);
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+    background-color: var(--color-slate-50);
+    padding: 0.85rem 0.95rem;
+    border-bottom: 1px solid var(--color-slate-200);
+    white-space: nowrap;
+}
+
+.table-ledger td {
+    padding: 0.95rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-slate-100);
+    font-size: 0.82rem;
+    transition: background-color 150ms ease;
+}
+
+.table-ledger tbody tr {
+    transition: background-color 150ms ease;
+}
+
+.table-ledger tbody tr:hover td {
+    background-color: #F8FAFC;
+}
+
+/* ==========================================================================
+   6. Micro-Animations & Interactive Motion (150ms - 350ms)
+   ========================================================================== */
+@keyframes esuratFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-up {
+    animation: esuratFadeUp 320ms var(--ease-out-expo) both;
+}
+
+.delay-1 { animation-delay: 55ms; }
+.delay-2 { animation-delay: 110ms; }
+.delay-3 { animation-delay: 165ms; }
+.delay-4 { animation-delay: 220ms; }
+
+/* Elastic Modal Transition */
+.modal.fade .modal-dialog {
+    transition: transform 280ms var(--ease-out-expo), opacity 200ms ease-out;
+    transform: translateY(12px) scale(0.98);
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+}
+
+/* Soft Pulse for Priority / Revisi / Waiting TTE Badges */
+@keyframes esuratSoftPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(225, 29, 72, 0);
+    }
+}
+
+.status-pulse {
+    animation: esuratSoftPulse 2.2s infinite ease-in-out;
+}
+
+/* Future-Ready Stage 2 Classes: QR Scan Box & Verified Pulse */
+@keyframes esuratQrScanLine {
+    0% {
+        top: 8%;
+        opacity: 0.25;
+    }
+    50% {
+        top: 88%;
+        opacity: 0.85;
+    }
+    100% {
+        top: 8%;
+        opacity: 0.25;
+    }
+}
+
+.qr-scan-box {
+    position: relative;
+    overflow: hidden;
+}
+
+.qr-scan-box::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #10B981, transparent);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.75);
+    animation: esuratQrScanLine 2.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes esuratVerifiedPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.38);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+.verified-pulse {
+    animation: esuratVerifiedPulse 2.4s infinite ease-in-out;
+}
+
+/* Accessibility: Reduced Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .animate-fade-up {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .status-pulse,
+    .verified-pulse,
+    .qr-scan-box::after {
+        animation: none !important;
+    }
+}
+
